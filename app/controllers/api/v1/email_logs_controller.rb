@@ -1,4 +1,4 @@
-class EmailLogsController < ApplicationController
+class Api::V1::EmailLogsController < ApplicationController
   before_action :set_email_log, only: %i[ show update destroy ]
 
   # GET /email_logs
