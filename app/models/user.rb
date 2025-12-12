@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  has_paper_trail
   include Devise::JWT::RevocationStrategies::JTIMatcher
 
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, presence: true

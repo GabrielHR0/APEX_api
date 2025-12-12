@@ -13,6 +13,11 @@ Rails.application.routes.draw do
             registration: 'signup'
           }
         
+        resources :social_media_profiles
+        resources :companies do
+          resource :address, controller: 'company_address', only: [:show, :create, :update]
+        end
+        
         resources :users
         resources :extension_cores
         resources :projects
