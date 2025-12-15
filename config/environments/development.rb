@@ -42,7 +42,7 @@ Rails.application.configure do
   config.action_mailer.smtp_settings = {
     address: 'smtp-relay.brevo.com',
     port: 587,
-    domain: 'localhost',
+    domain: 'localhost.localdomain',
     user_name: ENV['BREVO_LOGIN'],
     password: ENV['BREVO_SMTP_PASSWORD'],
     authentication: :login,

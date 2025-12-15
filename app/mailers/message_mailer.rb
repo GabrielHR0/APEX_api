@@ -1,6 +1,7 @@
 class MessageMailer < ApplicationMailer
-    default from: ENV['BREVO_EMAIL']
     after_deliver :update_contact_status
+
+    default from: ENV['BREVO_EMAIL']
     
     layout 'mailer'
 
@@ -18,7 +19,7 @@ class MessageMailer < ApplicationMailer
         if contact_id.present?
             contact = Contact.find_by(id: contact_id)
             if contact
-                contact.update(satus: recebido)
+                contact.update(status: "recebido")
             else
                 Rails.logger.warn "Callback falhou: Contact ID #{contact_id} não encontrado."
             end
