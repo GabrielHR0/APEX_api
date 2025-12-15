@@ -1,0 +1,44 @@
+!DOCTYPE html
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Nova Mensagem de Contato</title>
+    </head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333; margin: 0; padding: 20px; background-color: #f4f4f4;">
+
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+        <p style="font-size: 16px;">
+            Você recebeu uma nova mensagem através do formulário de contato:
+        </p>
+        
+        <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #eeeeee; font-weight: bold; width: 30%;">Nome:</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eeeeee;"><%= @contact.name %></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #eeeeee; font-weight: bold;">E-mail do Cliente:</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eeeeee;"><a href="mailto:<%= @contact.email %>" style="color: #0056b3; text-decoration: none;"><%= @contact.email %></a></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border-bottom: 1px solid #eeeeee; font-weight: bold;">Enviado em:</td>
+                <td style="padding: 8px; border-bottom: 1px solid #eeeeee;"><%= @contact.created_at.strftime("%d/%m/%Y %H:%M:%S %Z") %></td>
+            </tr>
+        </table>
+        
+        <h2 style="color: #333333; margin-top: 30px;">Mensagem:</h2>
+        
+        <div style="border: 1px solid #dddddd; padding: 15px; background-color: #f9f9f9; border-radius: 4px;">
+            <%= simple_format(@contact.message) %> 
+        </div>
+
+        <p style="margin-top: 30px; font-size: 14px; text-align: center;">
+            <a href="mailto:<%= @contact.email %>" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                Clique para Responder
+            </a>
+        </p>
+
+    </div>
+</body>
+</html>

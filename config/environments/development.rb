@@ -30,10 +30,25 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
 
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false
+
+  # Tipo de envio
+  config.action_mailer.delivery_method = :smtp
+
+  #Configuração do brevo
+  config.action_mailer.smtp_settings = {
+    address: 'smtp-relay.brevo.com',
+    port: 587,
+    domain: 'localhost',
+    user_name: ENV['BREVO_LOGIN'],
+    password: ENV['BREVO_SMTP_PASSWORD'],
+    authentication: :login,
+    enable_starttls_auto: true,
+    openssl_verify_mode: 'none'
+  }
 
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
