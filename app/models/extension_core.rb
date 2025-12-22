@@ -1,7 +1,7 @@
 class ExtensionCore < ApplicationRecord
     has_paper_trail
 
-    validates: :acronym, :name, required: true
+    validates :acronym, :name, required: true
     has_many_attached :images
 
     def image_count_within_limit
