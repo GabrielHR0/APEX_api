@@ -1,4 +1,5 @@
 class ExtensionCore < ApplicationRecord
+    has_paper_trail
 
     validates: :acronym, :name, required: true
     has_many_attached :images

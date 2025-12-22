@@ -18,9 +18,18 @@ class Api::V1::ContactsController < ApplicationController
     @contact = Contact.new(contact_params)
 
     if @contact.save
-      render json: @contact, status: :created, location: @contact
+      company_email = Company.first&.email
+      @contact.update(status: 'enviado')
+
+      if company_email.present?
+        MessageMailer.recive_message(@contact, company_email).deliver_later
+      else
+        Rails.logger.warn "Não foi possível enviar a notificação de contato: E-mail da empresa não encontrado no banco de dados."
+      end
+
+      render json: @contact, status: :created
     else
-      render json: @contact.errors, status: :unprocessable_content
+      render json: @contact.errors, status: :unprocessable_entity
     end
   end
 

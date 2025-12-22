@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Nova Mensagem de Contato</title>
+  </head>
+
+  <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif; background-color: #E6E6E6; color: #333333;">
+
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);">
+
+      <!-- Cabeçalho -->
+      <div style="background-color: #971B2F; padding: 20px; text-align: center;">
+        <h1 style="margin: 0; font-size: 22px; color: #ffffff;">
+          📩 Nova Mensagem de Contato
+        </h1>
+      </div>
+
+      <!-- Conteúdo -->
+      <div style="padding: 25px;">
+
+        <p style="font-size: 16px; margin-bottom: 20px;">
+          Você recebeu uma nova mensagem através do formulário de contato do site.
+        </p>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 15px;">
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #eeeeee; font-weight: bold; width: 35%;">
+              Nome:
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid #eeeeee;">
+              <%= @contact.name %>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #eeeeee; font-weight: bold;">
+              E-mail do Cliente:
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid #eeeeee;">
+              <a href="mailto:<%= @contact.email %>" style="color: #971B2F; text-decoration: none; font-weight: bold;">
+                <%= @contact.email %>
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #eeeeee; font-weight: bold;">
+              Enviado em:
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid #eeeeee;">
+              <%= @contact.created_at.strftime("%d/%m/%Y %H:%M:%S") %>
+            </td>
+          </tr>
+        </table>
+
+        <h2 style="margin-top: 30px; font-size: 18px; color: #971B2F;">
+          Mensagem
+        </h2>
+
+        <div style="border-left: 4px solid #971B2F; background-color: #f9f9f9; padding: 15px; border-radius: 4px; margin-top: 10px;">
+          <%= simple_format(@contact.message) %>
+        </div>
+
+        <!-- Botão -->
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="mailto:<%= @contact.email %>"
+             style="background-color: #971B2F; color: #ffffff; padding: 12px 24px; text-decoration: none; font-size: 15px; border-radius: 6px; display: inline-block;">
+            Responder Mensagem
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Rodapé -->
+      <div style="background-color: #f2f2f2; padding: 15px; text-align: center; font-size: 13px; color: #777777;">
+        Esta mensagem foi enviada automaticamente através do formulário de contato.
+      </div>
+
+    </div>
+
+  </body>
+</html>

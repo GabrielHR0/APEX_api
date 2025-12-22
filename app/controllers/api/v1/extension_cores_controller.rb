@@ -1,4 +1,4 @@
-class ExtensionCoresController < ApplicationController
+class Api::V1::ExtensionCoresController < ApplicationController
   before_action :set_extension_core, only: %i[ show update destroy ]
 
   # GET /extension_cores
