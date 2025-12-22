@@ -1,7 +1,7 @@
 class Company < ApplicationRecord
     has_paper_trail
 
-    validates :singleton_verification, on: :create
+    validate :singleton_verification, on: :create
 
     validates :phone, phone: true
     validates :email, format: {with: URI::MailTo::EMAIL_REGEXP}
