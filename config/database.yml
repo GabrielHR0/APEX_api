@@ -2,21 +2,28 @@ default: &default
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  url: <%= ENV["DATABASE_URL"] %>
 
 development:
   <<: *default
   database: apex_development
-  host: localhost
-  username: postgres
-  password: postgres
 
 test:
   <<: *default
   database: apex_test
-  host: localhost
-  username: postgres
-  password: postgres
 
 production:
-  <<: *default
-  url: <%= ENV["DATABASE_URL"] %>
+  primary:
+    <<: *default
+
+  cache:
+    <<: *default
+    migrations_paths: db/cache_migrate
+
+  queue:
+    <<: *default
+    migrations_paths: db/queue_migrate
+
+  cable:
+    <<: *default
+    migrations_paths: db/cable_migrate
