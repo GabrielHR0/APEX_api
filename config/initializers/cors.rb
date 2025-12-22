@@ -6,12 +6,24 @@
 # Read more: https://github.com/cyu/rack-cors
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
+  # Para desenvolvimento local
   allow do
-    origins "https://gabrielhr0.github.io/APEX/"
-
+    origins "http://localhost:5173", "http://localhost:3000", "https://gabrielhr0.github.io"  # Vite e React dev servers
+    
     resource "*",
       headers: :any,
-      methods: [:get, :post, :put, :patch, :delete, :options, :head]
+      methods: [:get, :post, :put, :patch, :delete, :options, :head],
+      credentials: true,
+      expose: ['Authorization']
+  end
+  
+  # Para produção no GitHub Pages
+  allow do
+    origins "https://gabrielhr0.github.io"
+    
+    resource "*",
+      headers: :any,
+      methods: [:get, :post, :put, :patch, :delete, :options, :head],
       credentials: true,
       expose: ['Authorization']
   end
