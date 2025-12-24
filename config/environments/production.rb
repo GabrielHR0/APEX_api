@@ -14,6 +14,10 @@ Rails.application.configure do
   config.action_controller.perform_caching = true
   config.cache_store = :memory_store
 
+  config.logger = ActiveSupport::Logger.new($stdout)
+  config.log_level = :debug
+
+
   # Serve static files if RAILS_SERVE_STATIC_FILES is set.
   config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present?
 
