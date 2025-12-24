@@ -22,7 +22,11 @@ class Api::V1::ContactsController < ApplicationController
       @contact.update(status: 'enviado')
 
       if company_email.present?
-        MessageMailer.recive_message(@contact, company_email).deliver_now
+        begin
+          MessageMailer.receive_message(@contact, company_email).deliver_now
+        rescue => e
+          Rails.logger.error e.message
+        end
       else
         Rails.logger.warn "Não foi possível enviar a notificação de contato: E-mail da empresa não encontrado no banco de dados."
       end
