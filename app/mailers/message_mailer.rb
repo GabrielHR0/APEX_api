@@ -5,7 +5,7 @@ class MessageMailer < ApplicationMailer
     
     layout 'mailer'
 
-    def recive_message(contact, company_email)
+    def receive_message(contact, company_email)
         @contact = contact
         headers['X-Contact-ID'] = @contact.id
         mail(to: company_email, subject: "Nova Mensagem de Contato de: #{contact.name}")
