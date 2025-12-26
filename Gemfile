@@ -21,6 +21,7 @@ gem 'devise-jwt'
 gem 'jsonapi-serializer'
 
 gem 'brevo'
+gem 'faraday', '~> 2.9'
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
