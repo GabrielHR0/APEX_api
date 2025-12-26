@@ -32,19 +32,9 @@ Rails.application.configure do
 
   # Emails
   config.action_mailer.perform_caching = false
+  config.action_mailer.perform_deliveries = true
   config.action_mailer.raise_delivery_errors = true
 
-  config.action_mailer.delivery_method = :smtp
-
-  config.action_mailer.smtp_settings = {
-    address: 'smtp-relay.brevo.com',
-    port: 587,
-    domain: 'render.com',
-    user_name: ENV['BREVO_LOGIN'],
-    password: ENV['BREVO_SMTP_PASSWORD'],
-    authentication: :login,
-    enable_starttls_auto: true
-  }
 
   # 🔴 MUITO IMPORTANTE
   config.action_mailer.default_url_options = {

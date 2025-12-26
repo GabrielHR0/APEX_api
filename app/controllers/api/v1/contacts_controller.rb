@@ -22,13 +22,12 @@ class Api::V1::ContactsController < ApplicationController
       @contact.update(status: 'enviado')
 
       if company_email.present?
-        begin
-          MessageMailer.receive_message(@contact, company_email).deliver_now
-        rescue => e
-          Rails.logger.error e.message
-        end
+        Brevo::SendContactEmail.call(
+          contact: @contact,
+          company_email: company_email
+        )
       else
-        Rails.logger.warn "Não foi possível enviar a notificação de contato: E-mail da empresa não encontrado no banco de dados."
+        Rails.logger.warn 'E-mail da empresa não encontrado'
       end
 
       render json: @contact, status: :created
