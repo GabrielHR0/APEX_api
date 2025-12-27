@@ -15,26 +15,6 @@ test:
   <<: *default
   database: apex_test
 
-production_local:
-  primary:
-    <<: *default
-    database: <%= ENV.fetch('PROD_DB_NAME', 'apex_production') %>
-
-  cache:
-    <<: *default
-    database: <%= ENV.fetch('CACHE_DB_NAME', 'apex_cache') %>
-    migrations_paths: db/cache_migrate
-
-  queue:
-    <<: *default
-    database: <%= ENV.fetch('QUEUE_DB_NAME', 'apex_queue') %>
-    migrations_paths: db/queue_migrate
-
-  cable:
-    <<: *default
-    database: <%= ENV.fetch('CABLE_DB_NAME', 'apex_cable') %>
-    migrations_paths: db/cable_migrate
-
 production:
   <<: *default
   url: <%= ENV["DATABASE_URL"] %>
@@ -52,4 +32,5 @@ production:
   cable:
     <<: *default
     url: <%= ENV["DATABASE_URL"] %>
+
     migrations_paths: db/cable_migrate
