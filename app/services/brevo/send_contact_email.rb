@@ -8,11 +8,10 @@ module Brevo
       
       api = ::Brevo::TransactionalEmailsApi.new
 
-      html_content = ApplicationController.render(
-        template: 'message_mailer/receive_message',
-        layout: false,
-        assigns: {contact: contact}
-      )
+      html_content = MessageMailer
+        .receive_message(contact, company_email)
+        .body
+        .decoded
 
       # Log do conteúdo HTML
       Rails.logger.info("HTML Content (primeiros 200 chars): #{html_content[0..200]}...")
