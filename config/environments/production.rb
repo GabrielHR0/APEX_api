@@ -35,6 +35,12 @@ Rails.application.configure do
   config.action_mailer.perform_deliveries = true
   config.action_mailer.raise_delivery_errors = true
 
+  # config/environments/production.rb
+  config.cache_store = :redis_cache_store, {
+    url: ENV['REDIS_URL'],
+    expires_in: 1.hour
+  }
+
 
   # 🔴 MUITO IMPORTANTE
   config.action_mailer.default_url_options = {
