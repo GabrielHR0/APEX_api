@@ -1,9 +1,18 @@
 class Api::V1::SocialMediaProfilesController < ApplicationController
-  before_action :set_company
   before_action :set_profile, only: [:show, :update, :destroy]
 
   def index
-    render json: @company.social_media_profile
+    company_id = params[:company_id]
+    return render json: { error: "company_id parameter is required" }, status: :bad_request unless company_id
+
+    profiles = Rails.cache.fetch(
+      "company:#{company_id}:social_media_profiles",
+      expires_in: 10.minutes
+    ) do
+      SocialMediaProfile.where(company_id: company_id).to_a
+    end
+
+    render json: profiles
   end
 
   def show
@@ -11,7 +20,15 @@ class Api::V1::SocialMediaProfilesController < ApplicationController
   end
 
   def create
-    profile = @company.social_media_profile.build(social_media_profile_params)
+      Rails.logger.debug "PARAMS: #{params.to_unsafe_h}"
+
+    if params[:company_id]
+      @company = Company.find(params[:company_id])
+      profile = @company.social_media_profiles.build(social_media_profile_params)
+    else
+      return render json: { error: "company_id parameter is required" }, status: :bad_request
+    end
+
 
     if profile.save
       render json: profile, status: :created
@@ -40,7 +57,7 @@ class Api::V1::SocialMediaProfilesController < ApplicationController
   end
 
   def set_profile
-    @profile = @company.social_media_profile.find(params[:id])
+    @profile = SocialMediaProfile.find(params[:id])
   end
 
   def social_media_profile_params
