@@ -415,7 +415,7 @@ DEPENDENCIES
   jsonapi-serializer
   kamal
   paper_trail
-  pg (~> 1.6)
+  pg (~> 1.1)
   phonelib
   puma (>= 5.0)
   pundit
