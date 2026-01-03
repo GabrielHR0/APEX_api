@@ -21,8 +21,7 @@ class Api::V1::SocialMediaProfilesController < ApplicationController
 
   def create
       Rails.logger.debug "PARAMS: #{params.to_unsafe_h}"
-      Rails.cache.delete("company:#{profile.company_id}:social_media_profiles") # limpa cache
-
+      
     if params[:company_id]
       @company = Company.find(params[:company_id])
       profile = @company.social_media_profiles.build(social_media_profile_params)
@@ -32,6 +31,7 @@ class Api::V1::SocialMediaProfilesController < ApplicationController
 
 
     if profile.save
+      Rails.cache.delete("company:#{profile.company_id}:social_media_profiles")
       render json: profile, status: :created
     else
       render json: { errors: profile.errors.full_messages }, status: :unprocessable_entity
@@ -39,8 +39,8 @@ class Api::V1::SocialMediaProfilesController < ApplicationController
   end
 
   def update
-    Rails.cache.delete("company:#{profile.company_id}:social_media_profiles") # limpa cache
     if @profile.update(social_media_profile_params)
+      Rails.cache.delete("company:#{@profile.company_id}:social_media_profiles")
       render json: @profile
     else
       render json: { errors: @profile.errors.full_messages }, status: :unprocessable_entity
@@ -48,8 +48,8 @@ class Api::V1::SocialMediaProfilesController < ApplicationController
   end
 
   def destroy
-    Rails.cache.delete("company:#{profile.company_id}:social_media_profiles") # limpa cache
     @profile.destroy
+    Rails.cache.delete("company:#{@profile.company_id}:social_media_profiles")
     render json: { message: "Perfil removido" }, status: :ok
   end
 
