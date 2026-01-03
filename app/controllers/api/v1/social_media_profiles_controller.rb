@@ -21,6 +21,7 @@ class Api::V1::SocialMediaProfilesController < ApplicationController
 
   def create
       Rails.logger.debug "PARAMS: #{params.to_unsafe_h}"
+      Rails.cache.delete("company:#{profile.company_id}:social_media_profiles") # limpa cache
 
     if params[:company_id]
       @company = Company.find(params[:company_id])
@@ -38,6 +39,7 @@ class Api::V1::SocialMediaProfilesController < ApplicationController
   end
 
   def update
+    Rails.cache.delete("company:#{profile.company_id}:social_media_profiles") # limpa cache
     if @profile.update(social_media_profile_params)
       render json: @profile
     else
@@ -46,6 +48,7 @@ class Api::V1::SocialMediaProfilesController < ApplicationController
   end
 
   def destroy
+    Rails.cache.delete("company:#{profile.company_id}:social_media_profiles") # limpa cache
     @profile.destroy
     render json: { message: "Perfil removido" }, status: :ok
   end
