@@ -36,10 +36,6 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
 
   # config/environments/production.rb
-  config.cache_store = :redis_cache_store, {
-    url: ENV['REDIS_URL'],
-    expires_in: 1.hour
-  }
 
 
   # 🔴 MUITO IMPORTANTE
@@ -54,3 +50,4 @@ Rails.application.configure do
   # Logs
   config.active_support.report_deprecations = false
 end
+
