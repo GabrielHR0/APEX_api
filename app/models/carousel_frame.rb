@@ -107,7 +107,8 @@ class CarouselFrame < ApplicationRecord
 
     Rails.application.routes.url_helpers.rails_blob_url(
       image,
-      only_path: false
+      only_path: false,
+      host: Rails.application.config.action_mailer.default_url_options[:host]
     )
   end
 end
