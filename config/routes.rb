@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+
   namespace :api do
     namespace :v1 do
         devise_for :users,
@@ -13,6 +14,28 @@ Rails.application.routes.draw do
             registration: 'signup'
           }
         
+        resources :cards do
+          member do
+            patch :move_up
+            patch :move_down
+            patch :move_to_position
+          end
+          
+          collection do
+            post :reorder
+          end
+        end
+        resources :carousel_frames do
+              member do
+                patch :move_up
+                patch :move_down
+                patch :move_to_position
+              end
+      
+      collection do
+        post :reorder
+      end
+    end
         resources :social_media_profiles
         resources :companies do
           resource :address, controller: 'company_address', only: [:show, :create, :update]
