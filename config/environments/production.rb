@@ -10,6 +10,11 @@ Rails.application.configure do
   # Disable full error reports.
   config.consider_all_requests_local = false
 
+  Rails.application.routes.default_url_options = {
+    host: 'https://apex-api-1sbo.onrender.com',
+    protocol: 'https'
+  }
+
   # Enable caching.
   config.action_controller.perform_caching = true
   config.cache_store = :memory_store
@@ -50,4 +55,5 @@ Rails.application.configure do
   # Logs
   config.active_support.report_deprecations = false
 end
+
 
