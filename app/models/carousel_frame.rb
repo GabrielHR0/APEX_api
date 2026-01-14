@@ -17,12 +17,10 @@ class CarouselFrame < ApplicationRecord
   scope :active, -> { where(active: true).order(:position) }
   scope :ordered, -> { order(:position) }
   
-  # Método para mover para uma posição específica
   def move_to_position(new_position)
     update(position: new_position)
   end
   
-  # Método para trocar posição com outro frame
   def swap_position_with(other_frame)
     return if self == other_frame
     

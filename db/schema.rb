@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_08_222210) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_13_134542) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -111,6 +111,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_222210) do
     t.index ["contact_id"], name: "index_email_logs_on_contact_id"
   end
 
+  create_table "events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "position"
+    t.string "subtitle"
+    t.string "title"
+    t.datetime "updated_at", null: false
+  end
+
   create_table "extension_cores", force: :cascade do |t|
     t.string "acronym"
     t.datetime "created_at", null: false
@@ -118,6 +126,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_222210) do
     t.string "director_email"
     t.string "director_name"
     t.string "name"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "hero_cards", force: :cascade do |t|
+    t.boolean "active"
+    t.datetime "created_at", null: false
+    t.string "description"
+    t.integer "position"
+    t.string "title"
     t.datetime "updated_at", null: false
   end
 

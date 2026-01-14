@@ -1,5 +1,5 @@
 class Api::V1::ExtensionCoresController < ApplicationController
-  before_action :set_extension_core, only: %i[ show update destroy ]
+  before_action :set_extension_core, only: [ show, update, destroy ]
 
   # GET /extension_cores
   def index
@@ -18,7 +18,7 @@ class Api::V1::ExtensionCoresController < ApplicationController
     @extension_core = ExtensionCore.new(extension_core_params)
 
     if @extension_core.save
-      render json: @extension_core, status: :created, location: @extension_core
+      render json: @extension_core, status: :created, location: api_v1_extension_core_url(@extension_core)
     else
       render json: @extension_core.errors, status: :unprocessable_content
     end

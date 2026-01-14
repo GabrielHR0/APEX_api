@@ -2,6 +2,9 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
+
+      resources :hero_cards
+      resources :events
         devise_for :users,
           controllers: {
             sessions: 'api/v1/users/sessions',
