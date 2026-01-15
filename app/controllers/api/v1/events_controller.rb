@@ -29,7 +29,7 @@ class Api::V1::EventsController < ApplicationController
   # PATCH/PUT /api/v1/events/1
   def update
     if @event.update(event_params)
-      render json: @event
+      render json: @event.as_json(methods: [:image_url])
     else
       render json: @event.errors, status: :unprocessable_content
     end
@@ -83,12 +83,12 @@ class Api::V1::EventsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_event
-      @event = Event.find(params.expect(:id))
+      @event = Event.find(params[:id])
     end
 
     # Only allow a list of trusted parameters through.
     def event_params
-      params.expect(event: [ :title, :subtitle, :position, :image ])
+      params.require(:event).permit(:title, :subtitle, :position, :image)
     end
 
     def image_url_for(attachment)
