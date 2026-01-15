@@ -1,5 +1,5 @@
 class Api::V1::ExtensionCoresController < ApplicationController
-  before_action :set_extension_core, only: [ show, update, destroy ]
+  before_action :set_extension_core, only: [:show, :update, :destroy]
 
   # GET /extension_cores
   def index
