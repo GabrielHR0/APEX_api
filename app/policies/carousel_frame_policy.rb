@@ -1,0 +1,2 @@
+class CarouselFramePolicy < ApplicationPolicy
+end

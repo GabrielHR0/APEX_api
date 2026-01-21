@@ -1,4 +1,5 @@
-class Api::V1::CardsController < ApplicationController
+class Api::V1::CardsController < ApiController
+  skip_before_action :authenticate_user!, only: [:index]
   before_action :set_card, only: [:show, :update, :destroy, :move_up, :move_down, :move_to_position]
   
   def index

@@ -1,5 +1,6 @@
 class Api::V1::ContactsController < ApplicationController
   before_action :set_contact, only: %i[ show update destroy ]
+  skip_before_action :authenticate_user!, only: [:create]
 
   # GET /contacts
   def index
@@ -17,6 +18,8 @@ class Api::V1::ContactsController < ApplicationController
   def create
     @contact = Contact.new(contact_params)
 
+    authorize @contact
+    
     if @contact.save
       company_email = Company.first&.email
       @contact.update(status: 'enviado')

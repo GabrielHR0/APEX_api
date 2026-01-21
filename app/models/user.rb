@@ -16,7 +16,7 @@ class User < ApplicationRecord
   has_many :permissions, through: :roles
   
   before_create :set_jti
-  after_create :assign_default_role
+  after_create :assign_default_role, if: :new_record?
   
   # JWT payload personalizado
   def jwt_payload

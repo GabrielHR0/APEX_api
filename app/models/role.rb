@@ -23,27 +23,3 @@ class Role < ApplicationRecord
     find_by(name: VIEWER)
   end
 end
-
-# app/models/permission.rb
-class Permission < ApplicationRecord
-  has_many :role_permissions, dependent: :destroy
-  has_many :roles, through: :role_permissions
-  
-  validates :resource, :action, presence: true
-  validates :action, inclusion: { in: %w[create read update destroy manage] }
-  
-  scope :for_resource, ->(resource) { where(resource: resource) }
-  scope :for_action, ->(action) { where(action: action) }
-end
-
-# app/models/user_role.rb
-class UserRole < ApplicationRecord
-  belongs_to :user
-  belongs_to :role
-end
-
-# app/models/role_permission.rb
-class RolePermission < ApplicationRecord
-  belongs_to :role
-  belongs_to :permission
-end

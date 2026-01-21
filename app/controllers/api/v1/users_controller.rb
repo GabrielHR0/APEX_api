@@ -1,8 +1,8 @@
-class Api::V1::UsersController < ApplicationController
+class Api::V1::UsersController < Api::V1::ApiController
     before_action :set_user, only: %i[show update destroy]
 
     def index
-        @users = User.all
+        @users = policy_scope(User)
 
         render json: @users
     end
@@ -22,7 +22,7 @@ class Api::V1::UsersController < ApplicationController
     end
 
     def update
-        if @user.update(user_params)
+        if @user.update(permitted_attributes(@user))
             render json: @user
         else
             render json: @user.errors, status: :unprocessable_content
@@ -30,13 +30,15 @@ class Api::V1::UsersController < ApplicationController
     end
 
     def destroy
+        authorize @user
         @user.destroy!
+        head :no_content
     end
 
     private 
         
     def set_user
-        @user = User.find(params.expect(:id))
+        @user = User.find(params[:id])
     end
 
     def user_params
