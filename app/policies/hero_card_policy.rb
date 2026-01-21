@@ -1,0 +1,3 @@
+class HeroCardPolicy < ApplicationPolicy
+
+end

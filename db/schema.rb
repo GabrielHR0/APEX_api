@@ -10,29 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_12_165725) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_15_222526) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "active_storage_attachments", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "record_type", null: false
-    t.bigint "record_id", null: false
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
 
   create_table "active_storage_blobs", force: :cascade do |t|
-    t.string "key", null: false
-    t.string "filename", null: false
-    t.string "content_type"
-    t.text "metadata"
-    t.string "service_name", null: false
     t.bigint "byte_size", null: false
     t.string "checksum"
+    t.string "content_type"
     t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
@@ -43,109 +43,191 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_12_165725) do
   end
 
   create_table "addresses", force: :cascade do |t|
-    t.string "street"
-    t.string "number"
-    t.string "complement"
-    t.string "neighborhood"
     t.string "city"
-    t.string "state"
-    t.string "zip_code"
+    t.string "complement"
     t.string "country"
-    t.string "enderecavel_type", null: false
-    t.bigint "enderecavel_id", null: false
     t.datetime "created_at", null: false
+    t.bigint "enderecavel_id", null: false
+    t.string "enderecavel_type", null: false
+    t.string "neighborhood"
+    t.string "number"
+    t.string "state"
+    t.string "street"
     t.datetime "updated_at", null: false
+    t.string "zip_code"
     t.index ["enderecavel_type", "enderecavel_id"], name: "index_addresses_on_enderecavel"
   end
 
-  create_table "companies", force: :cascade do |t|
-    t.string "name"
-    t.text "tagline"
-    t.string "email"
-    t.string "phone"
+  create_table "cards", force: :cascade do |t|
+    t.boolean "active", default: true
+    t.bigint "carousel_frame_id", null: false
     t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "position"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["carousel_frame_id"], name: "index_cards_on_carousel_frame_id"
+    t.index ["position"], name: "index_cards_on_position"
+  end
+
+  create_table "carousel_frames", force: :cascade do |t|
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "position"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_carousel_frames_on_active"
+    t.index ["position"], name: "index_carousel_frames_on_position"
+  end
+
+  create_table "companies", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "name"
+    t.string "phone"
+    t.text "tagline"
     t.datetime "updated_at", null: false
   end
 
   create_table "contacts", force: :cascade do |t|
-    t.string "name"
-    t.string "email"
-    t.text "message"
-    t.string "status"
-    t.string "ip_address"
-    t.datetime "send_at"
     t.datetime "created_at", null: false
+    t.string "email"
+    t.string "ip_address"
+    t.text "message"
+    t.string "name"
+    t.datetime "send_at"
+    t.string "status"
     t.datetime "updated_at", null: false
   end
 
   create_table "email_logs", force: :cascade do |t|
     t.bigint "contact_id", null: false
-    t.string "status"
-    t.string "external_id"
-    t.text "error_message"
     t.datetime "created_at", null: false
+    t.text "error_message"
+    t.string "external_id"
+    t.string "status"
     t.datetime "updated_at", null: false
     t.index ["contact_id"], name: "index_email_logs_on_contact_id"
   end
 
+  create_table "events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "position"
+    t.string "subtitle"
+    t.string "title"
+    t.datetime "updated_at", null: false
+  end
+
   create_table "extension_cores", force: :cascade do |t|
     t.string "acronym"
-    t.string "name"
-    t.string "description"
-    t.string "director_name"
-    t.string "director_email"
     t.datetime "created_at", null: false
+    t.string "description"
+    t.string "director_email"
+    t.string "director_name"
+    t.string "name"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "hero_cards", force: :cascade do |t|
+    t.boolean "active"
+    t.datetime "created_at", null: false
+    t.string "description"
+    t.integer "position"
+    t.string "title"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "permissions", force: :cascade do |t|
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "resource", null: false
+    t.datetime "updated_at", null: false
+    t.index ["resource", "action"], name: "index_permissions_on_resource_and_action", unique: true
   end
 
   create_table "projects", force: :cascade do |t|
-    t.string "name"
+    t.datetime "created_at", null: false
     t.string "description"
     t.string "details"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.bigint "extension_core_id", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
     t.index ["extension_core_id"], name: "index_projects_on_extension_core_id"
   end
 
+  create_table "role_permissions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "permission_id", null: false
+    t.bigint "role_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["permission_id"], name: "index_role_permissions_on_permission_id"
+    t.index ["role_id", "permission_id"], name: "index_role_permissions_on_role_id_and_permission_id", unique: true
+    t.index ["role_id"], name: "index_role_permissions_on_role_id"
+  end
+
+  create_table "roles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_roles_on_name", unique: true
+  end
+
   create_table "social_media_profiles", force: :cascade do |t|
-    t.string "platform"
-    t.string "url"
-    t.string "username"
     t.boolean "active"
     t.bigint "company_id", null: false
     t.datetime "created_at", null: false
+    t.string "platform"
     t.datetime "updated_at", null: false
+    t.string "url"
+    t.string "username"
     t.index ["company_id"], name: "index_social_media_profiles_on_company_id"
   end
 
+  create_table "user_roles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "role_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["role_id"], name: "index_user_roles_on_role_id"
+    t.index ["user_id", "role_id"], name: "index_user_roles_on_user_id_and_role_id", unique: true
+    t.index ["user_id"], name: "index_user_roles_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
-    t.string "reset_password_token"
-    t.datetime "reset_password_sent_at"
-    t.datetime "remember_created_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.string "jti"
+    t.datetime "remember_created_at"
+    t.datetime "reset_password_sent_at"
+    t.string "reset_password_token"
+    t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["jti"], name: "index_users_on_jti"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
   create_table "versions", force: :cascade do |t|
-    t.string "whodunnit"
     t.datetime "created_at"
+    t.string "event", null: false
     t.bigint "item_id", null: false
     t.string "item_type", null: false
-    t.string "event", null: false
     t.text "object"
+    t.string "whodunnit"
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "cards", "carousel_frames"
   add_foreign_key "email_logs", "contacts"
   add_foreign_key "projects", "extension_cores"
+  add_foreign_key "role_permissions", "permissions"
+  add_foreign_key "role_permissions", "roles"
   add_foreign_key "social_media_profiles", "companies"
+  add_foreign_key "user_roles", "roles"
+  add_foreign_key "user_roles", "users"
 end

@@ -1,0 +1,3 @@
+class ExtensionCorePolicy < ApplicationPolicy
+
+end

@@ -8,6 +8,7 @@ Rails.application.configure do
 
   # Do not eager load code on boot.
   config.eager_load = false
+  Rails.application.routes.default_url_options[:host] = "http://localhost:3000"
 
   # Show full error reports.
   config.consider_all_requests_local = true
@@ -44,23 +45,11 @@ Rails.application.configure do
   config.action_mailer.perform_caching = false
 
   # Tipo de envio
-  config.action_mailer.delivery_method = :smtp
-
-  #Configuração do brevo
-  config.action_mailer.smtp_settings = {
-    address: 'smtp-relay.brevo.com',
-    port: 587,
-    domain: 'localhost.localdomain',
-    user_name: ENV['BREVO_LOGIN'],
-    password: ENV['BREVO_SMTP_PASSWORD'],
-    authentication: :login,
-    enable_starttls_auto: true,
-    openssl_verify_mode: 'none'
-  }
+  config.action_mailer.perform_deliveries = true
 
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
-
+  
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 

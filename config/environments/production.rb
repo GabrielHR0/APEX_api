@@ -10,9 +10,18 @@ Rails.application.configure do
   # Disable full error reports.
   config.consider_all_requests_local = false
 
+  Rails.application.routes.default_url_options = {
+    host: 'https://apex-api-1sbo.onrender.com',
+    protocol: 'https'
+  }
+
   # Enable caching.
   config.action_controller.perform_caching = true
   config.cache_store = :memory_store
+
+  config.logger = ActiveSupport::Logger.new($stdout)
+  config.log_level = :debug
+
 
   # Serve static files if RAILS_SERVE_STATIC_FILES is set.
   config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present?
@@ -28,25 +37,11 @@ Rails.application.configure do
 
   # Emails
   config.action_mailer.perform_caching = false
+  config.action_mailer.perform_deliveries = true
   config.action_mailer.raise_delivery_errors = true
 
   # config/environments/production.rb
-  config.cache_store = :redis_cache_store, {
-    url: ENV['REDIS_URL'],
-    expires_in: 1.hour
-  }
 
-  config.action_mailer.delivery_method = :smtp
-
-  config.action_mailer.smtp_settings = {
-    address: 'smtp-relay.brevo.com',
-    port: 587,
-    domain: 'render.com',
-    user_name: ENV['BREVO_LOGIN'],
-    password: ENV['BREVO_SMTP_PASSWORD'],
-    authentication: :login,
-    enable_starttls_auto: true
-  }
 
   # 🔴 MUITO IMPORTANTE
   config.action_mailer.default_url_options = {
@@ -60,3 +55,5 @@ Rails.application.configure do
   # Logs
   config.active_support.report_deprecations = false
 end
+
+

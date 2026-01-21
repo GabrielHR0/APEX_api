@@ -1,30 +1,37 @@
-class Api::V1::ContactsController < ApplicationController
+class Api::V1::ContactsController < Api::V1::ApiController
   before_action :set_contact, only: %i[ show update destroy ]
+  skip_before_action :authenticate_user!, only: [:create]
 
   # GET /contacts
   def index
-    @contacts = Contact.all
+    @contacts = policy_scope(Contact)
 
     render json: @contacts
   end
 
   # GET /contacts/1
   def show
+    authorize @contact
     render json: @contact
   end
 
   # POST /contacts
   def create
     @contact = Contact.new(contact_params)
-
+    
+    authorize @contact
+    
     if @contact.save
       company_email = Company.first&.email
       @contact.update(status: 'enviado')
 
       if company_email.present?
-        MessageMailer.recive_message(@contact, company_email).deliver_later
+        Brevo::SendContactEmail.call(
+          contact: @contact,
+          company_email: company_email
+        )
       else
-        Rails.logger.warn "Não foi possível enviar a notificação de contato: E-mail da empresa não encontrado no banco de dados."
+        Rails.logger.warn 'E-mail da empresa não encontrado'
       end
 
       render json: @contact, status: :created
@@ -35,6 +42,7 @@ class Api::V1::ContactsController < ApplicationController
 
   # PATCH/PUT /contacts/1
   def update
+    authorize @contact
     if @contact.update(contact_params)
       render json: @contact
     else
@@ -44,7 +52,9 @@ class Api::V1::ContactsController < ApplicationController
 
   # DELETE /contacts/1
   def destroy
+    authorize @contact
     @contact.destroy!
+    head: no_content
   end
 
   private
