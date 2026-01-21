@@ -1,4 +1,3 @@
-# app/models/user.rb - ATUALIZADO
 class User < ApplicationRecord
   include Devise::JWT::RevocationStrategies::JTIMatcher
 
@@ -22,7 +21,7 @@ class User < ApplicationRecord
   def jwt_payload
     super.merge(
       roles: roles.pluck(:name),
-      permissions: permission_list
+      #permissions: permission_list
     )
   end
   
@@ -51,7 +50,6 @@ class User < ApplicationRecord
     roles.exists?(name: role_name)
   end
   
-  # Atalhos para roles comuns
   def admin?
     has_role?(Role::ADMIN)
   end
@@ -64,10 +62,7 @@ class User < ApplicationRecord
     has_role?(Role::VIEWER)
   end
   
-  # MÉTODOS DE PERMISSÃO
-  def can?(resource, action)
-    return true if admin? # Admin tem acesso a tudo
-    
+  def can?(resource, action)    
     permissions.exists?(resource: resource.to_s, action: action.to_s)
   end
   
@@ -75,7 +70,6 @@ class User < ApplicationRecord
     !can?(resource, action)
   end
   
-  # Lista de permissões no formato "resource:action"
   def permission_list
     permissions.pluck(:resource, :action).map { |r, a| "#{r}:#{a}" }
   end

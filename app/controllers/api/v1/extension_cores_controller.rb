@@ -1,22 +1,23 @@
-class Api::V1::ExtensionCoresController < ApplicationController
+class Api::V1::ExtensionCoresController < Api::V1::ApiController
   before_action :set_extension_core, only: [:show, :update, :destroy]
 
   # GET /extension_cores
   def index
-    @extension_cores = ExtensionCore.all
+    @extension_cores = policy_scope(ExtensionCore)
 
     render json: @extension_cores
   end
 
   # GET /extension_cores/1
   def show
+    authorize @extension_core
     render json: @extension_core
   end
 
   # POST /extension_cores
   def create
     @extension_core = ExtensionCore.new(extension_core_params)
-
+    authorize @extension_core
     if @extension_core.save
       render json: @extension_core, status: :created, location: api_v1_extension_core_url(@extension_core)
     else
@@ -26,6 +27,7 @@ class Api::V1::ExtensionCoresController < ApplicationController
 
   # PATCH/PUT /extension_cores/1
   def update
+    authorize @extension_core
     if @extension_core.update(extension_core_params)
       render json: @extension_core
     else
@@ -35,7 +37,9 @@ class Api::V1::ExtensionCoresController < ApplicationController
 
   # DELETE /extension_cores/1
   def destroy
+    authorize @extension_core
     @extension_core.destroy!
+    head: no_content
   end
 
   private

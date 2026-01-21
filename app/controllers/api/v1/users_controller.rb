@@ -3,17 +3,17 @@ class Api::V1::UsersController < Api::V1::ApiController
 
     def index
         @users = policy_scope(User)
-
         render json: @users
     end
 
     def show
+        authorize @user
         render json: @user
     end
 
     def create
         @user = User.new(user_params)
-
+        authorize @user
         if @user.save
             render json: @user, status: :created, location: @user
         else
@@ -22,7 +22,9 @@ class Api::V1::UsersController < Api::V1::ApiController
     end
 
     def update
-        if @user.update(permitted_attributes(@user))
+        authorize @user
+
+        if @user.update(user_params)
             render json: @user
         else
             render json: @user.errors, status: :unprocessable_content
