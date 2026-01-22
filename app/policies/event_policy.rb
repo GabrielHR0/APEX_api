@@ -1,0 +1,3 @@
+class EventPolocy < ApplicationPolicy
+    
+end

@@ -1,8 +1,10 @@
-class Api::V1::CarouselFramesController < ApplicationController
+class Api::V1::CarouselFramesController < Api::V1::ApiController
   # Remova :edit e :new do before_action
+  skip_before_action :authenticate_user!, only: [:index, :show]
   before_action :set_carousel_frame, only: [:show, :update, :destroy, :move_up, :move_down, :move_to_position]
 
   def index
+    authorize CarouselFrame
     if params[:include] == 'cards'
       @carousel_frames = CarouselFrame
                           .includes(:cards)
@@ -12,11 +14,10 @@ class Api::V1::CarouselFramesController < ApplicationController
       card_ids = @carousel_frames.map { |frame| frame.cards.pluck(:id) }.flatten
       cards_with_images = Card.with_attached_image.where(id: card_ids)
       cards_by_id = cards_with_images.index_by(&:id)
-      
+
       render json: with_cards_optimized(@carousel_frames, cards_by_id)
     else
       @carousel_frames = CarouselFrame.all.with_attached_image
-      
       render json: @carousel_frames.as_json(
         methods: [:image_url]
       )
@@ -24,6 +25,7 @@ class Api::V1::CarouselFramesController < ApplicationController
   end
   
   def show
+    authorize @carousel_frame
     if params[:include] == 'cards'
       @carousel_frame = CarouselFrame
                         .includes(cards: { image_attachment: :blob })
@@ -44,7 +46,7 @@ class Api::V1::CarouselFramesController < ApplicationController
 
   def create
     @carousel_frame = CarouselFrame.new(carousel_frame_params)
-
+    authorize @carousel_frame
     if @carousel_frame.save
       render json: @carousel_frame.as_json(methods: [:image_url]), 
              status: :created,
@@ -55,6 +57,7 @@ class Api::V1::CarouselFramesController < ApplicationController
   end
 
   def update
+    authorize @carousel_frame
     if @carousel_frame.update(carousel_frame_params)
       render json: @carousel_frame.as_json(methods: [:image_url])
     else
@@ -63,11 +66,13 @@ class Api::V1::CarouselFramesController < ApplicationController
   end
 
   def destroy
+    authorize @carousel_frame
     @carousel_frame.destroy
     head :no_content
   end
 
   def move_up
+    authorize @carousel_frame, :manage
     new_position = @carousel_frame.position - 1
     @carousel_frame.move_to_position(new_position)
     
@@ -79,6 +84,7 @@ class Api::V1::CarouselFramesController < ApplicationController
   end
   
   def move_down
+    authorize @carousel_frame, :manage
     new_position = @carousel_frame.position + 1
     @carousel_frame.move_to_position(new_position)
     
@@ -89,6 +95,7 @@ class Api::V1::CarouselFramesController < ApplicationController
   end
   
   def move_to_position
+    authorize @carousel_frame, :manage
     new_position = params[:position].to_i
     @carousel_frame.move_to_position(new_position)
     
@@ -99,6 +106,7 @@ class Api::V1::CarouselFramesController < ApplicationController
   end
   
   def reorder
+    authorize @carousel_frame, :manage
     params[:order].each_with_index do |id, index|
       CarouselFrame.where(id: id).update_all(position: index + 1)
     end

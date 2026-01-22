@@ -1,21 +1,22 @@
-class Api::V1::ProjectsController < ApplicationController
+class Api::V1::ProjectsController < Api::V1::ApiController
   before_action :set_project, only: %i[ show update destroy ]
 
   # GET /projects
   def index
-    @projects = Project.all
-
+    @projects = policy_scope(Project)
     render json: @projects
   end
 
   # GET /projects/1
   def show
+    authorize @project
     render json: @project
   end
 
   # POST /projects
   def create
     @project = Project.new(project_params)
+    authorize @project
 
     if @project.save
       render json: @project, status: :created, location: @project
@@ -26,6 +27,7 @@ class Api::V1::ProjectsController < ApplicationController
 
   # PATCH/PUT /projects/1
   def update
+    authorize @project
     if @project.update(project_params)
       render json: @project
     else
@@ -35,6 +37,7 @@ class Api::V1::ProjectsController < ApplicationController
 
   # DELETE /projects/1
   def destroy
+    authorize @project
     @project.destroy!
   end
 

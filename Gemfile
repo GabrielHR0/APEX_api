@@ -18,15 +18,14 @@ end
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.21"
 
-gem 'devise'
+gem 'devise', '~> 4.9'
 gem 'devise-jwt'
+gem 'jwt'
 gem 'jsonapi-serializer'
 
 gem 'brevo'
 gem 'faraday', '~> 2.9'
-
 gem 'redis', '~> 5.0'
-
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
@@ -51,6 +50,16 @@ gem "thruster", require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem "rack-cors"
 
+group :development, :test do
+  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'pry-rails'
+end
+
+group :development do
+  gem 'listen', '~> 3.3'
+  gem 'spring'
+end
+
 gem 'pundit' # Para autorização
 gem 'paper_trail' # Para histórico de alterações
 gem 'phonelib' # Para validação de telefones
@@ -66,3 +75,5 @@ group :development, :test do
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
 end
+
+gem "kaminari", "~> 1.2"

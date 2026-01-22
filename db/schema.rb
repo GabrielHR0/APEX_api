@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_13_134542) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_21_195223) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -138,6 +138,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_13_134542) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "page_views", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "ip"
+    t.string "page"
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+  end
+
+  create_table "permissions", force: :cascade do |t|
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "resource", null: false
+    t.datetime "updated_at", null: false
+    t.index ["resource", "action"], name: "index_permissions_on_resource_and_action", unique: true
+  end
+
   create_table "projects", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "description"
@@ -146,6 +163,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_13_134542) do
     t.string "name"
     t.datetime "updated_at", null: false
     t.index ["extension_core_id"], name: "index_projects_on_extension_core_id"
+  end
+
+  create_table "role_permissions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "permission_id", null: false
+    t.bigint "role_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["permission_id"], name: "index_role_permissions_on_permission_id"
+    t.index ["role_id", "permission_id"], name: "index_role_permissions_on_role_id_and_permission_id", unique: true
+    t.index ["role_id"], name: "index_role_permissions_on_role_id"
+  end
+
+  create_table "roles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_roles_on_name", unique: true
   end
 
   create_table "social_media_profiles", force: :cascade do |t|
@@ -157,6 +192,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_13_134542) do
     t.string "url"
     t.string "username"
     t.index ["company_id"], name: "index_social_media_profiles_on_company_id"
+  end
+
+  create_table "user_roles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "role_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["role_id"], name: "index_user_roles_on_role_id"
+    t.index ["user_id", "role_id"], name: "index_user_roles_on_user_id_and_role_id", unique: true
+    t.index ["user_id"], name: "index_user_roles_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -188,5 +233,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_13_134542) do
   add_foreign_key "cards", "carousel_frames"
   add_foreign_key "email_logs", "contacts"
   add_foreign_key "projects", "extension_cores"
+  add_foreign_key "role_permissions", "permissions"
+  add_foreign_key "role_permissions", "roles"
   add_foreign_key "social_media_profiles", "companies"
+  add_foreign_key "user_roles", "roles"
+  add_foreign_key "user_roles", "users"
 end
