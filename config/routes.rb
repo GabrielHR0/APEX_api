@@ -19,6 +19,14 @@ Rails.application.routes.draw do
       resources :hero_cards
       resources :events
 
+      resources :page_views, only: [:create, :index] do
+        collection do
+          get :stats
+          get :monthly
+          get :by_page
+        end
+      end
+
       resources :cards do
         member do
           patch :move_up

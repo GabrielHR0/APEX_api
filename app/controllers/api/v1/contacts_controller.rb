@@ -54,7 +54,7 @@ class Api::V1::ContactsController < Api::V1::ApiController
   def destroy
     authorize @contact
     @contact.destroy!
-    head: no_content
+    head :no_content
   end
 
   private

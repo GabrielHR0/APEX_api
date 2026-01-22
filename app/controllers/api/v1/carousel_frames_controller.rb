@@ -1,8 +1,10 @@
 class Api::V1::CarouselFramesController < Api::V1::ApiController
   # Remova :edit e :new do before_action
+  skip_before_action :authenticate_user!, only: [:index, :show]
   before_action :set_carousel_frame, only: [:show, :update, :destroy, :move_up, :move_down, :move_to_position]
 
   def index
+    authorize CarouselFrame
     if params[:include] == 'cards'
       @carousel_frames = CarouselFrame
                           .includes(:cards)
@@ -12,12 +14,10 @@ class Api::V1::CarouselFramesController < Api::V1::ApiController
       card_ids = @carousel_frames.map { |frame| frame.cards.pluck(:id) }.flatten
       cards_with_images = Card.with_attached_image.where(id: card_ids)
       cards_by_id = cards_with_images.index_by(&:id)
-      authorize @carousel_frames
 
       render json: with_cards_optimized(@carousel_frames, cards_by_id)
     else
       @carousel_frames = CarouselFrame.all.with_attached_image
-      authorize @carousel_frames
       render json: @carousel_frames.as_json(
         methods: [:image_url]
       )

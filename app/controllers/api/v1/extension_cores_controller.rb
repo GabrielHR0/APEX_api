@@ -39,7 +39,7 @@ class Api::V1::ExtensionCoresController < Api::V1::ApiController
   def destroy
     authorize @extension_core
     @extension_core.destroy!
-    head: no_content
+    head :no_content
   end
 
   private

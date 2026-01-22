@@ -35,7 +35,7 @@ class Api::V1::CompaniesController < Api::V1::ApiController
   def destroy
     authorize @company
     @company.destroy!
-    head: no_content
+    head :no_content
   end
 
   private 

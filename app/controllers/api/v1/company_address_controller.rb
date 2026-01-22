@@ -14,7 +14,6 @@ class Api::V1::CompanyAddressController < Api::V1::ApiController
     return update if @company.address.present?
     authorize @company
     address = @company.build_address(address_params)
-    authorize @company
     if address.save
       render json: address, status: :created
     else

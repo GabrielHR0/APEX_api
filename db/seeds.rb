@@ -40,7 +40,8 @@ resources = ['hero_card',
   'carousel', 
   'card', 
   'address', 
-  'social_media_profile'
+  'social_media_profile',
+  'page_view'
   ] 
 
 # =========================
