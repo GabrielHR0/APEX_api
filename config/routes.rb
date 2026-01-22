@@ -58,7 +58,11 @@ Rails.application.routes.draw do
           only: [:show, :create, :update]
       end
 
-      resources :users
+      resources :users do
+        collection do
+          get 'me'
+        end
+      end
       resources :extension_cores
       resources :projects
       resources :email_logs
