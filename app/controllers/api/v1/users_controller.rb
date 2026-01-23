@@ -6,6 +6,10 @@ class Api::V1::UsersController < Api::V1::ApiController
         render json: @users
     end
 
+    def me
+        render json: UserSerializer.new(current_user).serializable_hash[:data][:attributes]
+    end
+
     def show
         authorize @user
         render json: @user
