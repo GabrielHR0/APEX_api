@@ -1,4 +1,3 @@
-
 puts "Limpando dados existentes..."
 UserRole.delete_all
 RolePermission.delete_all
@@ -30,15 +29,17 @@ puts "Roles criadas."
 # RECURSOS DO SISTEMA
 # =========================
 
-resources = ['hero_card', 
+resources = [
+  'dashboard',
+  'hero_card', 
   'event', 
   'user', 
   'project', 
   'extension_core', 
   'contact', 
   'company', 
-  'carousel', 
-  'card', 
+  'carousel_frame', 
+  'card',
   'address', 
   'social_media_profile',
   'page_view'
@@ -100,4 +101,47 @@ Permission.all.each do |permission|
   admin_role.permissions << permission unless admin_role.permissions.include?(permission)
 end
 
-puts "Seeds finalizados com sucesso!"
+# =========================
+# USUÁRIOS DE EXEMPLO
+# =========================
+
+puts "Criando usuários..."
+
+# Administrador
+admin_user = User.create!(
+  email: 'apex@example.com',
+  password: '9qacht',
+  password_confirmation: '9qacht',
+  created_at: Time.current,
+  updated_at: Time.current
+)
+UserRole.create!(user: admin_user, role: admin_role)
+puts "✓ Admin: apex@example.com / 9qacht"
+
+# Editor
+editor_user = User.create!(
+  email: 'editor@example.com',
+  password: 'editor123',
+  password_confirmation: 'editor123',
+  created_at: Time.current,
+  updated_at: Time.current
+)
+UserRole.create!(user: editor_user, role: editor_role)
+puts "✓ Editor: editor@example.com / ueh43"
+
+# Viewer
+viewer_user = User.create!(
+  email: 'viewer@example.com',
+  password: 'viewer123',
+  password_confirmation: 'viewer123',
+  created_at: Time.current,
+  updated_at: Time.current
+)
+UserRole.create!(user: viewer_user, role: viewer_role)
+puts "✓ Viewer: viewer@example.com / viewer123"
+
+puts "\nSeeds finalizados com sucesso!"
+puts "Usuários criados:"
+puts "1. apex@example.com (senha: 9qach)"
+puts "2. editor@example.com (senha: ueh43)"
+puts "3. viewer@example.com (senha: viewer123)"

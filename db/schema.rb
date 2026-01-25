@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_21_195223) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_25_221251) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -95,8 +95,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_21_195223) do
     t.string "email"
     t.string "ip_address"
     t.text "message"
+    t.string "message_id"
     t.string "name"
-    t.datetime "send_at"
+    t.datetime "sent_at"
     t.string "status"
     t.datetime "updated_at", null: false
   end
@@ -112,11 +113,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_21_195223) do
   end
 
   create_table "events", force: :cascade do |t|
+    t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.integer "position"
     t.string "subtitle"
     t.string "title"
     t.datetime "updated_at", null: false
+    t.index ["position"], name: "index_events_on_position"
   end
 
   create_table "extension_cores", force: :cascade do |t|
@@ -156,6 +159,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_21_195223) do
   end
 
   create_table "projects", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.string "description"
     t.string "details"
@@ -188,10 +192,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_21_195223) do
     t.bigint "company_id", null: false
     t.datetime "created_at", null: false
     t.string "platform"
+    t.integer "position"
     t.datetime "updated_at", null: false
     t.string "url"
     t.string "username"
+    t.index ["active"], name: "index_social_media_profiles_on_active"
     t.index ["company_id"], name: "index_social_media_profiles_on_company_id"
+    t.index ["position"], name: "index_social_media_profiles_on_position"
   end
 
   create_table "user_roles", force: :cascade do |t|

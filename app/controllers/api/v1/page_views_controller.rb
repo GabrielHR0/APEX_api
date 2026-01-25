@@ -1,5 +1,8 @@
 class Api::V1::PageViewsController < Api::V1::ApiController
   skip_before_action :authenticate_user!, only: [:create]
+  
+  # Filtra por data antes de qualquer análise
+  before_action :set_date_range, only: [:summary, :chart_data, :top_pages, :top_sources]
 
   # POST /api/v1/page_views
   def create
@@ -10,63 +13,96 @@ class Api::V1::PageViewsController < Api::V1::ApiController
       ip: request.remote_ip,
       user_agent: request.user_agent
     )
-
     head :created
   end
 
-  # GET /api/v1/page_views
-  def index
+  # GET /api/v1/page_views/chart_data
+  # Aqui você vê por DIA, MÊS ou ANO
+  # Exemplo: /api/v1/page_views/chart_data?period=day
+  def chart_data
     authorize PageView
 
-    page     = params[:page] || 1
-    per_page = params[:per_page] || 20
+    period = %w[day month year].include?(params[:period]) ? params[:period] : 'day'
+    
+    format = case period
+             when 'day' then '%Y-%m-%d' # 2024-01-20
+             when 'month' then '%Y-%m'  # 2024-01
+             when 'year' then '%Y'      # 2024
+             end
 
-    views = PageView
-              .order(created_at: :desc)
-              .page(page)
-              .per(per_page)
+    # Agrupa no banco de dados usando DATE_TRUNC (PostgreSQL)
+    data = filtered_views
+            .group("DATE_TRUNC('#{period}', created_at)")
+            .order("1 ASC") # Ordena pela data crescente
+            .count
 
-    render json: {
-      data: views,
-      meta: {
-        current_page: views.current_page,
-        total_pages: views.total_pages,
-        total_count: views.total_count
+    formatted_data = data.map do |date, count|
+      {
+        date: date.strftime(format),
+        original_date: date,
+        count: count
       }
-    }
+    end
+
+    render json: formatted_data
   end
 
-  # GET /api/v1/page_views/stats
-  def stats
+  # GET /api/v1/page_views/summary
+  # Totais do período selecionado
+  def summary
     authorize PageView
 
-    views = PageView
-              .group("DATE_TRUNC('month', created_at)")
-              .order("DATE_TRUNC('month', created_at)")
-              .count
-
-    render json: views
-  end
-
-  # GET /api/v1/page_views/monthly
-  def monthly
-    authorize PageView
-
-    total = PageView.where(
-      created_at: Time.current.beginning_of_month..Time.current.end_of_month
-    ).count
+    total = filtered_views.count
+    unique_ips = filtered_views.distinct.count(:ip)
 
     render json: {
-      month: Time.current.strftime("%Y-%m"),
-      total: total
+      total_views: total,
+      unique_visitors: unique_ips,
+      period: { start: @start_date, end: @end_date }
     }
   end
 
-  # GET /api/v1/page_views/by_page
-  def by_page
+  # GET /api/v1/page_views/top_pages
+  def top_pages
     authorize PageView
 
-    views = PageView.group(:page).count
-    render json: views  
+    # As 10 páginas mais acessadas no período
+    data = filtered_views
+            .group(:page)
+            .order('count_all DESC')
+            .limit(10)
+            .count
+
+    # Transforma em lista de objetos
+    render json: data.map { |k, v| { name: k, value: v } }
+  end
+
+  # GET /api/v1/page_views/top_sources
+  def top_sources
+    authorize PageView
+
+    # Sem gem browser: agrupa pela string crua do User Agent
+    data = filtered_views
+            .group(:user_agent)
+            .order('count_all DESC')
+            .limit(10)
+            .count
+
+    render json: data.map { |k, v| { name: k, value: v } }
+  end
+
+  private
+
+  def set_date_range
+    # Padrão: Últimos 30 dias se não informar nada
+    start_param = params[:start_date]
+    end_param   = params[:end_date]
+
+    @start_date = start_param.present? ? Time.zone.parse(start_param).beginning_of_day : 30.days.ago.beginning_of_day
+    @end_date   = end_param.present? ? Time.zone.parse(end_param).end_of_day : Time.zone.now.end_of_day
+  end
+
+  def filtered_views
+    PageView.where(created_at: @start_date..@end_date)
   end
 end

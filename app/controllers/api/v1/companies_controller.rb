@@ -1,5 +1,6 @@
 class Api::V1::CompaniesController < Api::V1::ApiController
   before_action :set_company, only: [:show, :update]
+  skip_before_action :authenticate_user!, only: [:index]
 
   def index
     @companies = policy_scope(Company)

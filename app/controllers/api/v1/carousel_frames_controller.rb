@@ -1,5 +1,4 @@
 class Api::V1::CarouselFramesController < Api::V1::ApiController
-  # Remova :edit e :new do before_action
   skip_before_action :authenticate_user!, only: [:index, :show]
   before_action :set_carousel_frame, only: [:show, :update, :destroy, :move_up, :move_down, :move_to_position]
 
@@ -72,7 +71,7 @@ class Api::V1::CarouselFramesController < Api::V1::ApiController
   end
 
   def move_up
-    authorize @carousel_frame, :manage
+    authorize @carousel_frame, :manage?
     new_position = @carousel_frame.position - 1
     @carousel_frame.move_to_position(new_position)
     
@@ -84,7 +83,7 @@ class Api::V1::CarouselFramesController < Api::V1::ApiController
   end
   
   def move_down
-    authorize @carousel_frame, :manage
+    authorize @carousel_frame, :manage?
     new_position = @carousel_frame.position + 1
     @carousel_frame.move_to_position(new_position)
     
@@ -95,7 +94,7 @@ class Api::V1::CarouselFramesController < Api::V1::ApiController
   end
   
   def move_to_position
-    authorize @carousel_frame, :manage
+    authorize @carousel_frame, :manage?
     new_position = params[:position].to_i
     @carousel_frame.move_to_position(new_position)
     
@@ -106,7 +105,7 @@ class Api::V1::CarouselFramesController < Api::V1::ApiController
   end
   
   def reorder
-    authorize @carousel_frame, :manage
+    authorize CarouselFrame, :manage?
     params[:order].each_with_index do |id, index|
       CarouselFrame.where(id: id).update_all(position: index + 1)
     end

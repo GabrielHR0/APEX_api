@@ -39,7 +39,7 @@ class Api::V1::CardsController < Api::V1::ApiController
   
   # Ações de reordenação
   def move_up
-    autorize @card, :manage
+    authorize @card, :manage?
     new_position = @card.position - 1
     @card.move_to_position(new_position)
     
@@ -50,7 +50,7 @@ class Api::V1::CardsController < Api::V1::ApiController
   end
   
   def move_down
-    autorize @card, :manage
+    authorize @card, :manage?
     new_position = @card.position + 1
     @card.move_to_position(new_position)
     
@@ -61,7 +61,7 @@ class Api::V1::CardsController < Api::V1::ApiController
   end
   
   def move_to_position
-    autorize @card, :manage
+    authorize @card, :manage?
     new_position = params[:position].to_i
     @card.move_to_position(new_position)
     
@@ -71,18 +71,20 @@ class Api::V1::CardsController < Api::V1::ApiController
     }
   end
   
-  # Reordenar múltiplos cards de uma vez (para drag and drop)
   def reorder
-    autorize @card, :manage
-    frame_id = params[:frame_id]
-    
+    authorize Card, :manage?
+
+    frame_id = params[:carousel_frame_id]
+
     Card.transaction do
       params[:order].each_with_index do |card_id, index|
-        Card.where(id: card_id, carousel_frame_id: frame_id)
-            .update_all(position: index + 1)
+        Card.where(
+          id: card_id,
+          carousel_frame_id: frame_id
+        ).update_all(position: index + 1)
       end
     end
-    
+
     head :ok
   end
   

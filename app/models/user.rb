@@ -63,6 +63,7 @@ class User < ApplicationRecord
   end
   
   def can?(resource, action)    
+    Rails.logger.info "[AUTH] Verificando permissão -> resource=#{resource}, action=#{action}"
     permissions.exists?(resource: resource.to_s, action: action.to_s)
   end
   

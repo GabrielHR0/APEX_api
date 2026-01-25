@@ -1,3 +1,3 @@
-class EventPolocy < ApplicationPolicy
+class EventPolicy < ApplicationPolicy
     
 end

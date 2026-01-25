@@ -17,13 +17,33 @@ Rails.application.routes.draw do
     namespace :v1 do
 
       resources :hero_cards
-      resources :events
+      
+      resources :events do
+        member do
+          patch :move_up
+          patch :move_down
+          patch :move_to_position
+        end
 
-      resources :page_views, only: [:create, :index] do
         collection do
-          get :stats
-          get :monthly
-          get :by_page
+          post :reorder
+        end
+      end
+
+      resources :page_views, only: [:create] do
+            collection do
+              get :summary      # Card de 
+              get :chart_data   # O Gráfico (Dia/Mês)
+              get :top_pages    # Lista de páginas
+              get :top_sources  # Lista de navegadores (cru)
+            end
+          end
+
+      resources :contacts do
+        collection do
+          get :summary      # Totais e contagem por status
+          get :chart_data   # Gráfico de linha (Leads por dia/mês)
+          get :by_status    # Dados para gráfico de Pizza (Status)
         end
       end
 
@@ -61,12 +81,18 @@ Rails.application.routes.draw do
       resources :users do
         collection do
           get 'me'
+          post 'refresh'
         end
       end
       resources :extension_cores
-      resources :projects
+
+      resources :projects do
+        collection do
+          get :count
+        end
+      end
+      
       resources :email_logs
-      resources :contacts
     end
   end
 end

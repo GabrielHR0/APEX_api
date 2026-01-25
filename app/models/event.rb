@@ -16,7 +16,7 @@ class Event < ApplicationRecord
     scope :active, -> { where(active: true).order(:position) }
     scope :ordered, -> { order(:position) }
 
-      def move_to_position(new_position)
+    def move_to_position(new_position)
         update(position: new_position)
     end
     
