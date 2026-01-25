@@ -6,10 +6,6 @@ class ApplicationPolicy
     @record = record
   end
 
-  # ========================
-  # AÇÕES PADRÃO (CRUD)
-  # ========================
-
   def index?
     check_permission(:read)
   end
@@ -38,17 +34,13 @@ class ApplicationPolicy
     check_permission(:destroy)
   end
 
-  # ========================
   # AÇÕES ESPECIAIS
-  # ========================
 
   def manage?
     check_permission(:manage, resource: 'ordering')
   end
 
-  # ========================
-  # FALLBACK INTELIGENTE
-  # ========================
+  # FALLBACK 
 
   def method_missing(method_name, *args, &block)
     if method_name.to_s.end_with?('?')
@@ -61,10 +53,6 @@ class ApplicationPolicy
   def respond_to_missing?(method_name, include_private = false)
     method_name.to_s.end_with?('?') || super
   end
-
-  # ========================
-  # SCOPE
-  # ========================
 
   class Scope
     attr_reader :user, :scope

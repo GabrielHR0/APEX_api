@@ -1,8 +1,8 @@
 class UserSerializer
   include JSONAPI::Serializer
-  attributes :id, :email, :created_at
+  attributes :id, :email, :created_at, :updated_at
 
-  attribute :created_date do |user|
-    user.created_at && user.created_at.strftime('%d/%m/%Y')
+  attribute :permissions do |user|
+    user.permissions
   end
 end

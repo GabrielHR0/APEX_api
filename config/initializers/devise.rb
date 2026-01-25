@@ -25,5 +25,6 @@ config.jwt do |jwt|
     jwt.revocation_requests = [
       ['DELETE', %r{^/api/v1/logout$}]
     ]
+    jwt.expiration_time = 24.hours.to_i
   end
 end

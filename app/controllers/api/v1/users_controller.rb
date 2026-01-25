@@ -6,6 +6,19 @@ class Api::V1::UsersController < Api::V1::ApiController
         render json: @users
     end
 
+    def refresh
+        current_user.update_column(:jti, SecureRandom.uuid)
+
+        new_token, _payload = Warden::JWTAuth::UserEncoder.new.call(
+          current_user, :user, nil
+        )
+
+        render json: { 
+          message: "Token atualizado com sucesso",
+          token: new_token,
+        }
+    end
+
     def me
         render json: UserSerializer.new(current_user).serializable_hash[:data][:attributes]
     end

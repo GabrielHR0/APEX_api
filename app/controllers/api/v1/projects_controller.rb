@@ -39,6 +39,14 @@ class Api::V1::ProjectsController < Api::V1::ApiController
   def destroy
     authorize @project
     @project.destroy!
+    head :no_content
+  end
+
+  def count
+    authorize Project
+    
+    total_projects = Project.where(active: true).count
+    render json: { total_projects: total_projects }
   end
 
   private

@@ -1,5 +1,6 @@
 class Api::V1::SocialMediaProfilesController < Api::V1::ApiController
   before_action :set_profile, only: [:show, :update, :destroy]
+  skip_before_action :authenticate_user!, only: [:show, :index]
 
   def index 
     company_id = params[:company_id]
@@ -36,10 +37,10 @@ class Api::V1::SocialMediaProfilesController < Api::V1::ApiController
     end
 
     if @profile.save
-      Rails.cache.delete("company:#{profile.company_id}:social_media_profiles")
-      render json: profile, status: :created
+      Rails.cache.delete("company:#{@profile.company_id}:social_media_profiles")
+      render json: @profile, status: :created
     else
-      render json: { errors: profile.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: @profile.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
@@ -58,6 +59,49 @@ class Api::V1::SocialMediaProfilesController < Api::V1::ApiController
     @profile.destroy
     Rails.cache.delete("company:#{@profile.company_id}:social_media_profiles")
     render json: { message: "Perfil removido" }, status: :ok
+  end
+
+  def move_up
+    authorize @profile, :manage?
+    new_position = @profile.position - 1
+    @profile.move_to_position(new_position)
+    
+    # Para API, retorne JSON em vez de redirect
+    render json: { 
+      message: "Movido para cima", 
+      position: @profile.reload.position 
+    }
+  end
+  
+  def move_down
+    authorize @profile, :manage?
+    new_position = @profile.position + 1
+    @profile.move_to_position(new_position)
+    
+    render json: { 
+      message: "Movido para baixo", 
+      position: @profile.reload.position 
+    }
+  end
+  
+  def move_to_position
+    authorize @profile, :manage?
+    new_position = params[:position].to_i
+    @profile.move_to_position(new_position)
+    
+    render json: { 
+      message: "Movido para posição #{new_position}", 
+      position: @profile.reload.position 
+    }
+  end
+  
+  def reorder
+    authorize @profile, :manage?
+    params[:order].each_with_index do |id, index|
+      SocialMediaProfile.where(id: id).update_all(position: index + 1)
+    end
+    
+    head :ok
   end
 
   private

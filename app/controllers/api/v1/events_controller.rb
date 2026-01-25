@@ -3,7 +3,7 @@ class Api::V1::EventsController < Api::V1::ApiController
 
   # GET /api/v1/events
   def index
-    @events = policy_scope(Event)
+    @events = policy_scope(Event).ordered
 
     render json: @events.as_json(methods: [ :image_url ])
   end
@@ -80,7 +80,7 @@ class Api::V1::EventsController < Api::V1::ApiController
   end
   
   def reorder
-    authorize @event, :manage?
+    authorize Event, :manage?
     params[:order].each_with_index do |id, index|
       Event.where(id: id).update_all(position: index + 1)
     end
