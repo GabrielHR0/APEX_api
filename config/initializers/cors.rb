@@ -1,30 +1,17 @@
-# Be sure to restart your server when you modify this file.
-
-# Avoid CORS issues when API is called from the frontend app.
-# Handle Cross-Origin Resource Sharing (CORS) in order to accept cross-origin Ajax requests.
-
-# Read more: https://github.com/cyu/rack-cors
-
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
-  # Para desenvolvimento local
   allow do
-    origins "http://localhost:5173", "http://localhost:3000", "https://gabrielhr0.github.io", "https://apex-e9ovljk6w-gabrielhr0s-projects.vercel.app"
-    
+    origins(
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://gabrielhr0.github.io",
+      "https://apex-7okmnvk7r-gabrielhr0s-projects.vercel.app",
+      "https://apex-e9ovljk6w-gabrielhr0s-projects.vercel.app"
+    )
+
     resource "*",
       headers: :any,
       methods: [:get, :post, :put, :patch, :delete, :options, :head],
       credentials: true,
-      expose: ['Authorization']
-  end
-  
-  # Para produção no GitHub Pages
-  allow do
-    origins "https://gabrielhr0.github.io"
-    
-    resource "*",
-      headers: :any,
-      methods: [:get, :post, :put, :patch, :delete, :options, :head],
-      credentials: true,
-      expose: ['Authorization']
+      expose: ["Authorization"]
   end
 end
