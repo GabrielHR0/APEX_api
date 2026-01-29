@@ -42,7 +42,6 @@ class Api::V1::HeroCardsController < Api::V1::ApiController
     new_position = @hero_card.position - 1
     @hero_card.move_to_position(new_position)
     
-    # Para API, retorne JSON em vez de redirect
     render json: { 
       message: "Movido para cima", 
       position: @hero_card.reload.position 
@@ -72,7 +71,7 @@ class Api::V1::HeroCardsController < Api::V1::ApiController
   end
   
   def reorder
-    authorize @hero_card, :manage?
+    authorize HeroCard, :manage?
     params[:order].each_with_index do |id, index|
       HeroCard.where(id: id).update_all(position: index + 1)
     end
