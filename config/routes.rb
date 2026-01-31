@@ -16,8 +16,18 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
 
-      resources :hero_cards
-      
+      resources :hero_cards do
+        member do
+          patch :move_up
+          patch :move_down
+          patch :move_to_position
+        end
+
+        collection do
+          post :reorder
+        end
+      end
+
       resources :events do
         member do
           patch :move_up
