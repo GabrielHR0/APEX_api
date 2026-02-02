@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_25_221251) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_01_215723) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -126,10 +126,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_25_221251) do
     t.string "acronym"
     t.datetime "created_at", null: false
     t.string "description"
-    t.string "director_email"
-    t.string "director_name"
+    t.bigint "member_id", null: false
     t.string "name"
     t.datetime "updated_at", null: false
+    t.index ["member_id"], name: "index_extension_cores_on_member_id"
+  end
+
+  create_table "hero_banners", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_hero_banners_on_active", where: "(active = true)"
   end
 
   create_table "hero_cards", force: :cascade do |t|
@@ -138,6 +147,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_25_221251) do
     t.string "description"
     t.integer "position"
     t.string "title"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "members", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "full_name"
+    t.string "phone"
+    t.string "role"
     t.datetime "updated_at", null: false
   end
 
@@ -164,9 +183,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_25_221251) do
     t.string "description"
     t.string "details"
     t.bigint "extension_core_id", null: false
+    t.boolean "featured", default: false, null: false
     t.string "name"
     t.datetime "updated_at", null: false
     t.index ["extension_core_id"], name: "index_projects_on_extension_core_id"
+    t.index ["featured"], name: "index_projects_on_featured"
   end
 
   create_table "role_permissions", force: :cascade do |t|
@@ -239,6 +260,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_25_221251) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "cards", "carousel_frames"
   add_foreign_key "email_logs", "contacts"
+  add_foreign_key "extension_cores", "members"
   add_foreign_key "projects", "extension_cores"
   add_foreign_key "role_permissions", "permissions"
   add_foreign_key "role_permissions", "roles"

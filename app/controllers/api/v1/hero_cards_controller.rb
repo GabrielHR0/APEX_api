@@ -1,4 +1,5 @@
 class Api::V1::HeroCardsController < Api::V1::ApiController
+  before_action :set_hero_card, only: [:show, :update, :destroy, :move_up, :move_down, :move_to_position, ]
 
   def index
     @hero_cards = policy_scope(HeroCard)
@@ -38,7 +39,7 @@ class Api::V1::HeroCardsController < Api::V1::ApiController
   end
 
   def move_up
-    authorize @hero_card, :manage?
+    authorize HeroCard, :manage?
     new_position = @hero_card.position - 1
     @hero_card.move_to_position(new_position)
     
@@ -49,7 +50,7 @@ class Api::V1::HeroCardsController < Api::V1::ApiController
   end
   
   def move_down
-    authorize @hero_card, :manage?
+    authorize HeroCard, :manage?
     new_position = @hero_card.position + 1
     @hero_card.move_to_position(new_position)
     
@@ -60,7 +61,7 @@ class Api::V1::HeroCardsController < Api::V1::ApiController
   end
   
   def move_to_position
-    authorize @hero_card, :manage?
+    authorize HeroCard, :manage?
     new_position = params[:position].to_i
     @hero_card.move_to_position(new_position)
     
@@ -85,7 +86,7 @@ class Api::V1::HeroCardsController < Api::V1::ApiController
     params.require(:hero_card).permit(:title, :description, :active )
   end
   
-  def set_hero_car
+  def set_hero_card
     @hero_card = HeroCard.find(params.expect(:id))
   end
 end
