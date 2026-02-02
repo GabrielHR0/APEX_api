@@ -28,6 +28,23 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :hero_banners do
+        collection do
+          get :active
+        end
+      end
+      
+      resources :members
+
+
+      resources :extension_cores do
+        member do
+          post :add_images
+          delete :remove_image
+          delete :remove_icon
+        end
+      end
+
       resources :events do
         member do
           patch :move_up

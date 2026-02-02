@@ -30,7 +30,9 @@ puts "Roles criadas."
 # =========================
 
 resources = [
+  'member',
   'dashboard',
+  'hero_banner',
   'hero_card', 
   'event', 
   'user', 
