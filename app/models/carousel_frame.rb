@@ -104,9 +104,8 @@ class CarouselFrame < ApplicationRecord
     return nil unless image.attached?
 
     Rails.application.routes.url_helpers.rails_blob_url(
-      image,
-      only_path: false,
-      host: Rails.application.config.action_mailer.default_url_options[:host]
+    image,
+    only_path: false
     )
   end
 end

@@ -5,6 +5,7 @@ class Member < ApplicationRecord
   validate :validate_image
   validates :email, presence: true, uniqueness: true
 
+  has_many :extension_cores
   has_one_attached :image
 
   before_destroy :ensure_no_extension_cores!

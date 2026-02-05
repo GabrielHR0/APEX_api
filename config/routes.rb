@@ -45,6 +45,8 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :landing_page
+
       resources :events do
         member do
           patch :move_up
