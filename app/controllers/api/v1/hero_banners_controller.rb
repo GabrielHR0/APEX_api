@@ -95,12 +95,11 @@ class Api::V1::HeroBannersController < Api::V1::ApiController
     )
   end
 
-  # 🔒 Garante que sempre exista UM ativo
   def ensure_one_active!
     active_heroes = HeroBanner.active
 
-    if active_heroes.count.zero?
-      HeroBanner.first&.update!(active: true)
+    if active_heroes.none?
+      HeroBanner.where.not(id: @hero_banner.id).first&.update!(active: true)
     elsif active_heroes.count > 1
       last_active = active_heroes.order(updated_at: :desc).first
       active_heroes.where.not(id: last_active.id).update_all(active: false)
@@ -111,7 +110,7 @@ class Api::V1::HeroBannersController < Api::V1::ApiController
     @hero_banner.active &&
       hero_banner_params.key?(:active) &&
       ActiveModel::Type::Boolean.new.cast(hero_banner_params[:active]) == false &&
-      HeroBanner.active.count == 1
+      HeroBanner.count == 1
   end
 
   def activate_fallback_hero

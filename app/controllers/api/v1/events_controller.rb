@@ -96,7 +96,7 @@ class Api::V1::EventsController < Api::V1::ApiController
 
     # Only allow a list of trusted parameters through.
     def event_params
-      params.require(:event).permit(:title, :subtitle, :position, :image)
+      params.require(:event).permit(:title, :subtitle, :position, :image, :active)
     end
 
     def image_url_for(attachment)
