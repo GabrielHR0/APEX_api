@@ -1,23 +1,29 @@
-# frozen_string_literal: true
-
 class Api::V1::Users::RegistrationsController < Devise::RegistrationsController
+  include RackSessionFix
+
   respond_to :json
-
+  
   private
-
+  
   def sign_up_params
     params.require(:user).permit(:email, :password, :password_confirmation)
   end
 
   def respond_with(resource, _opts = {})
-    if resource.persisted?
+
+    if request.method == "POST" && resource.persisted?
       render json: {
-        user: resource.as_json(only: [:id, :email]),
-        message: "Usuário criado com sucesso"
-      }, status: :created
-    else
+        status: {code: 200, message: "Signed up sucesfully."},
+        data: UserSerializer.new(resource).serializable_hash[:data][:attributes]
+      }, status: :ok
+
+    elsif request.method == "DELETE"
       render json: {
-        errors: resource.errors.full_messages
+        status: {code: 200, message: "Account deleted successfuly."}
+      }, status: :ok
+    else 
+      render json: {
+        status: {code: 422, message: "User couldn't be created successfully. #{resource.errors.full_messages.to_sentence}"}
       }, status: :unprocessable_entity
     end
   end

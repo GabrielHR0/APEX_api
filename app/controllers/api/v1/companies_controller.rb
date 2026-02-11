@@ -1,18 +1,21 @@
-class Api::V1::CompaniesController < ApplicationController
+class Api::V1::CompaniesController < Api::V1::ApiController
   before_action :set_company, only: [:show, :update]
+  skip_before_action :authenticate_user!, only: [:index]
 
   def index
-    @companies = Company.all
+    @companies = policy_scope(Company)
 
     render json: @companies
   end
 
   def show
+    authorize @company
     render json: @company
   end
 
   def create
     @company = Company.new(company_params)
+    authorize @company
 
     if @company.save
       render json: @company, status: :created
@@ -22,6 +25,7 @@ class Api::V1::CompaniesController < ApplicationController
   end
 
   def update
+    authorize @company
     if @company.update(company_params)
       render json: @company
     else
@@ -30,7 +34,9 @@ class Api::V1::CompaniesController < ApplicationController
   end
 
   def destroy
+    authorize @company
     @company.destroy!
+    head :no_content
   end
 
   private 

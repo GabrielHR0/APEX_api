@@ -1,18 +1,20 @@
-class Api::V1::CardsController < ApplicationController
+class Api::V1::CardsController < Api::V1::ApiController
+  skip_before_action :authenticate_user!, only: [:index]
   before_action :set_card, only: [:show, :update, :destroy, :move_up, :move_down, :move_to_position]
   
   def index
-    @cards = Card.all
+    @cards = policy_scope(Card)
     render json: @cards
   end
   
   def show
+    authorize @card
     render json: @card
   end
   
   def create
     @card = Card.new(card_params)
-    
+    authorize @card
     if @card.save
       render json: @card, status: :created, location: api_v1_card_url(@card)
     else
@@ -21,6 +23,7 @@ class Api::V1::CardsController < ApplicationController
   end
   
   def update
+    authorize @card
     if @card.update(card_params)
       render json: @card
     else
@@ -29,12 +32,14 @@ class Api::V1::CardsController < ApplicationController
   end
   
   def destroy
+    authorize @card
     @card.destroy
     head :no_content
   end
   
   # Ações de reordenação
   def move_up
+    authorize @card, :manage?
     new_position = @card.position - 1
     @card.move_to_position(new_position)
     
@@ -45,6 +50,7 @@ class Api::V1::CardsController < ApplicationController
   end
   
   def move_down
+    authorize @card, :manage?
     new_position = @card.position + 1
     @card.move_to_position(new_position)
     
@@ -55,6 +61,7 @@ class Api::V1::CardsController < ApplicationController
   end
   
   def move_to_position
+    authorize @card, :manage?
     new_position = params[:position].to_i
     @card.move_to_position(new_position)
     
@@ -64,17 +71,20 @@ class Api::V1::CardsController < ApplicationController
     }
   end
   
-  # Reordenar múltiplos cards de uma vez (para drag and drop)
   def reorder
-    frame_id = params[:frame_id]
-    
+    authorize Card, :manage?
+
+    frame_id = params[:carousel_frame_id]
+
     Card.transaction do
       params[:order].each_with_index do |card_id, index|
-        Card.where(id: card_id, carousel_frame_id: frame_id)
-            .update_all(position: index + 1)
+        Card.where(
+          id: card_id,
+          carousel_frame_id: frame_id
+        ).update_all(position: index + 1)
       end
     end
-    
+
     head :ok
   end
   

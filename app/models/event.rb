@@ -1,4 +1,6 @@
 class Event < ApplicationRecord
+    has_paper_trail
+    
     before_validation :set_default_position, on: :create
     after_save :reorder_positions
     after_destroy :reorder_after_destroy
@@ -16,7 +18,7 @@ class Event < ApplicationRecord
     scope :active, -> { where(active: true).order(:position) }
     scope :ordered, -> { order(:position) }
 
-      def move_to_position(new_position)
+    def move_to_position(new_position)
         update(position: new_position)
     end
     

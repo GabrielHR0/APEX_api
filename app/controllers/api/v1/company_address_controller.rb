@@ -1,7 +1,8 @@
-class Api::V1::CompanyAddressController < ApplicationController
+class Api::V1::CompanyAddressController < Api::V1::ApiController
   before_action :set_company
 
   def show
+    authorize @company
     if @company.address
       render json: @company.address
     else
@@ -11,9 +12,8 @@ class Api::V1::CompanyAddressController < ApplicationController
 
   def create
     return update if @company.address.present?
-
+    authorize @company
     address = @company.build_address(address_params)
-
     if address.save
       render json: address, status: :created
     else
@@ -23,7 +23,7 @@ class Api::V1::CompanyAddressController < ApplicationController
 
   def update
     address = @company.address || @company.build_address
-
+    authorize @company
     Rails.logger.debug "PARAMS: #{params.to_unsafe_h}"
 
     if address.update(address_params)

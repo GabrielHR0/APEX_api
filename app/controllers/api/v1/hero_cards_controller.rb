@@ -1,17 +1,19 @@
-class Api::V1::HeroCardsController < ApplicationController
+class Api::V1::HeroCardsController < Api::V1::ApiController
+  before_action :set_hero_card, only: [:show, :update, :destroy, :move_up, :move_down, :move_to_position, ]
 
   def index
-    @hero_cards = HeroCard.all
+    @hero_cards = policy_scope(HeroCard)
     render json: @hero_cards
   end
 
   def show
+    authorize @hero_card
     render json: @hero_card
   end
 
   def create
     @hero_card = HeroCard.new(hero_card_params)
-
+    authorize @hero_card
     if @hero_card.save
       render json: @hero_card,
       status: :created,
@@ -22,6 +24,7 @@ class Api::V1::HeroCardsController < ApplicationController
   end
 
   def update
+    authorize @hero_card
     if @hero_card.update(hero_card_params)
       render json: @hero_card
     else
@@ -30,15 +33,16 @@ class Api::V1::HeroCardsController < ApplicationController
   end
 
   def destroy
+    authorize @hero_card
     @hero_card.destroy
     head:no_content
   end
 
   def move_up
+    authorize HeroCard, :manage?
     new_position = @hero_card.position - 1
     @hero_card.move_to_position(new_position)
     
-    # Para API, retorne JSON em vez de redirect
     render json: { 
       message: "Movido para cima", 
       position: @hero_card.reload.position 
@@ -46,6 +50,7 @@ class Api::V1::HeroCardsController < ApplicationController
   end
   
   def move_down
+    authorize HeroCard, :manage?
     new_position = @hero_card.position + 1
     @hero_card.move_to_position(new_position)
     
@@ -56,6 +61,7 @@ class Api::V1::HeroCardsController < ApplicationController
   end
   
   def move_to_position
+    authorize HeroCard, :manage?
     new_position = params[:position].to_i
     @hero_card.move_to_position(new_position)
     
@@ -66,6 +72,7 @@ class Api::V1::HeroCardsController < ApplicationController
   end
   
   def reorder
+    authorize HeroCard, :manage?
     params[:order].each_with_index do |id, index|
       HeroCard.where(id: id).update_all(position: index + 1)
     end
@@ -79,7 +86,7 @@ class Api::V1::HeroCardsController < ApplicationController
     params.require(:hero_card).permit(:title, :description, :active )
   end
   
-  def set_hero_car
+  def set_hero_card
     @hero_card = HeroCard.find(params.expect(:id))
   end
 end

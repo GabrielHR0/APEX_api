@@ -1,6 +1,6 @@
 require "test_helper"
 
-class EmailLogTest < ActiveSupport::TestCase
+class PageViewTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end
