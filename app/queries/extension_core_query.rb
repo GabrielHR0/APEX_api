@@ -18,21 +18,26 @@ class ExtensionCoreQuery
         WHERE active = true
         GROUP BY extension_core_id
       )
-      SELECT jsonb_agg(
-        jsonb_build_object(
-          'id', ec.id,
-          'acronym', ec.acronym,
-          'name', ec.name,
-          'description', ec.description,
-          'member_id', ec.member_id,
-          'projects', COALESCE(pa.projects, '[]'::jsonb)
-        )
+      SELECT COALESCE(
+        jsonb_agg(
+          jsonb_build_object(
+            'id', ec.id,
+            'acronym', ec.acronym,
+            'name', ec.name,
+            'description', ec.description,
+            'member_id', ec.member_id,
+            'projects', COALESCE(pa.projects, '[]'::jsonb)
+          )
+        ),
+        '[]'::jsonb
       )
       FROM extension_cores ec
       LEFT JOIN projects_agg pa
         ON pa.extension_core_id = ec.id
     SQL
 
-    JSON.parse(ActiveRecord::Base.connection.select_value(sql))
+    JSON.parse(
+      ActiveRecord::Base.connection.select_value(sql) || '[]'
+    )
   end
 end

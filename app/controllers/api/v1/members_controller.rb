@@ -3,7 +3,10 @@ class Api::V1::MembersController < Api::V1::ApiController
 
   # GET /members
   def index
-    members = policy_scope(Member)
+    members = Member
+    members = members.active if params[:filter] == 'active'
+
+    members = policy_scope(members)
 
     render json: members.as_json(methods: [:image_url])
   end
@@ -70,4 +73,5 @@ class Api::V1::MembersController < Api::V1::ApiController
       :image
     )
   end
+
 end

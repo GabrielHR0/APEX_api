@@ -1,149 +1,101 @@
-puts "Limpando dados existentes..."
-UserRole.delete_all
-RolePermission.delete_all
-Permission.delete_all
-Role.delete_all
-User.delete_all
+puts "\n🌱 Limpando e populando banco...\n"
 
-puts "Iniciando Seeds..."
+ActiveRecord::Base.transaction do
+  puts "👤 Criando roles..."
 
-# =========================
-# ROLES
-# =========================
-
-admin_role = Role.find_or_create_by!(name: 'admin') do |role|
-  role.description = 'Administrador do sistema com acesso total'
-end
-
-editor_role = Role.find_or_create_by!(name: 'editor') do |role|
-  role.description = 'Pode criar, editar e organizar conteúdos'
-end
-
-viewer_role = Role.find_or_create_by!(name: 'viewer') do |role|
-  role.description = 'Pode apenas visualizar informações'
-end
-
-puts "Roles criadas."
-
-# =========================
-# RECURSOS DO SISTEMA
-# =========================
-
-resources = [
-  'member',
-  'dashboard',
-  'hero_banner',
-  'hero_card', 
-  'event', 
-  'user', 
-  'project', 
-  'extension_core', 
-  'contact', 
-  'company', 
-  'carousel_frame', 
-  'card',
-  'address', 
-  'social_media_profile',
-  'page_view'
-  ] 
-
-# =========================
-# PERMISSÕES DE LEITURA
-# =========================
-
-resources.each do |resource|
-  %w[read].each do |action|
-    permission = Permission.find_or_create_by!(
-      resource: resource,
-      action: action
-    ) do |p|
-      p.description = "Permite visualizar #{resource}"
-    end
-
-    editor_role.permissions << permission unless editor_role.permissions.include?(permission)
-    viewer_role.permissions << permission unless viewer_role.permissions.include?(permission)
+  admin_role = Role.find_or_create_by!(name: 'admin') do |role|
+    role.description = 'Administrador do sistema com acesso total'
   end
-end
 
-# =========================
-# PERMISSÕES DE ESCRITA
-# =========================
-
-resources.each do |resource|
-  %w[create update destroy].each do |action|
-    permission = Permission.find_or_create_by!(
-      resource: resource,
-      action: action
-    ) do |p|
-      p.description = "Permite #{action} registros de #{resource}"
-    end
-
-    editor_role.permissions << permission unless editor_role.permissions.include?(permission)
+  editor_role = Role.find_or_create_by!(name: 'editor') do |role|
+    role.description = 'Pode criar e editar conteúdos'
   end
+
+  viewer_role = Role.find_or_create_by!(name: 'viewer') do |role|
+    role.description = 'Pode apenas visualizar'
+  end
+
+  puts "🔐 Criando permissões..."
+
+  resources = %w[
+    user role permission
+    member dashboard hero_banner hero_card event project
+    extension_core contact company carousel_frame card address
+    social_media_profile page_view
+  ]
+
+  actions = %w[read create update destroy]
+
+  resources.each do |resource|
+    actions.each do |action|
+      Permission.find_or_create_by!(
+        resource: resource,
+        action: action
+      ) do |p|
+        p.description = case action
+                        when 'read'
+                          "Permite visualizar #{resource.pluralize}"
+                        when 'create'
+                          "Permite criar #{resource.pluralize}"
+                        when 'update'
+                          "Permite editar #{resource.pluralize}"
+                        when 'destroy'
+                          "Permite remover #{resource.pluralize}"
+                        end
+      end
+    end
+  end
+
+  Permission.find_or_create_by!(
+    resource: 'ordering',
+    action: 'manage'
+  ) do |p|
+    p.description = 'Permite alterar a ordem dos registros'
+  end
+
+  Permission.find_or_create_by!(
+    resource: 'cache',
+    action: 'manage'
+  ) do |p|
+    p.description = 'Permite limpar o cache do sistema'
+  end
+
+  puts "🔗 Associando permissões às roles..."
+
+  viewer_role.permissions = Permission.where(action: 'read')
+
+  editor_role.permissions = Permission.where(
+    action: %w[read create update destroy]
+  )
+
+  # 👉 Mantendo sua estrutura:
+  admin_role.permissions = Permission.all
+
+  puts "👥 Criando usuários..."
+
+  admin_user = User.find_or_create_by!(email: 'apex@example.com') do |user|
+    user.password = '9qacht'
+    user.password_confirmation = '9qacht'
+  end
+
+  editor_user = User.find_or_create_by!(email: 'editor@example.com') do |user|
+    user.password = 'editor123'
+    user.password_confirmation = 'editor123'
+  end
+
+  viewer_user = User.find_or_create_by!(email: 'viewer@example.com') do |user|
+    user.password = 'viewer123'
+    user.password_confirmation = 'viewer123'
+  end
+
+  puts "🧩 Associando roles aos usuários..."
+
+  admin_user.roles << admin_role unless admin_user.roles.include?(admin_role)
+  editor_user.roles << editor_role unless editor_user.roles.include?(editor_role)
+  viewer_user.roles << viewer_role unless viewer_user.roles.include?(viewer_role)
+
+  puts "\n✅ Seeds finalizados!\n"
+  puts "Admin:  apex@example.com / 9qacht"
+  puts "Editor: editor@example.com / editor123"
+  puts "Viewer: viewer@example.com / viewer123\n"
 end
-
-# =========================
-# PERMISSÃO GLOBAL (ORDENAÇÃO)
-# =========================
-
-ordering_permission = Permission.find_or_create_by!(
-  resource: 'ordering',
-  action: 'manage'
-) do |p|
-  p.description = 'Permite alterar a ordem de exibição dos itens'
-end
-
-admin_role.permissions << ordering_permission unless admin_role.permissions.include?(ordering_permission)
-editor_role.permissions << ordering_permission unless editor_role.permissions.include?(ordering_permission)
-
-# =========================
-# ADMIN TEM ACESSO TOTAL
-# =========================
-Permission.all.each do |permission|
-  admin_role.permissions << permission unless admin_role.permissions.include?(permission)
-end
-
-# =========================
-# USUÁRIOS DE EXEMPLO
-# =========================
-
-puts "Criando usuários..."
-
-# Administrador
-admin_user = User.create!(
-  email: 'apex@example.com',
-  password: '9qacht',
-  password_confirmation: '9qacht',
-  created_at: Time.current,
-  updated_at: Time.current
-)
-UserRole.create!(user: admin_user, role: admin_role)
-puts "✓ Admin: apex@example.com / 9qacht"
-
-# Editor
-editor_user = User.create!(
-  email: 'editor@example.com',
-  password: 'editor123',
-  password_confirmation: 'editor123',
-  created_at: Time.current,
-  updated_at: Time.current
-)
-UserRole.create!(user: editor_user, role: editor_role)
-puts "✓ Editor: editor@example.com / ueh43"
-
-# Viewer
-viewer_user = User.create!(
-  email: 'viewer@example.com',
-  password: 'viewer123',
-  password_confirmation: 'viewer123',
-  created_at: Time.current,
-  updated_at: Time.current
-)
-UserRole.create!(user: viewer_user, role: viewer_role)
-puts "✓ Viewer: viewer@example.com / viewer123"
-
-puts "\nSeeds finalizados com sucesso!"
-puts "Usuários criados:"
-puts "1. apex@example.com (senha: 9qach)"
-puts "2. editor@example.com (senha: ueh43)"
-puts "3. viewer@example.com (senha: viewer123)"

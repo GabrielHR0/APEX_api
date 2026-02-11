@@ -1,6 +1,6 @@
 class CreateHeroBanners < ActiveRecord::Migration[8.1]
   def change
-    create_table :hero_banners do |t|
+    create_table :hero_banners, id: :uuid do |t|
       t.string :title
       t.text :description
       t.boolean :active, default: true, null: false

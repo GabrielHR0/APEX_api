@@ -1,8 +1,6 @@
 class Api::V1::PageViewsController < Api::V1::ApiController
   skip_before_action :authenticate_user!, only: [:create]
-  
-  # Filtra por data antes de qualquer análise
-  before_action :set_date_range, only: [:summary, :chart_data, :top_pages, :top_sources]
+    before_action :set_date_range, only: [:summary, :chart_data, :top_pages, :top_sources]
 
   # POST /api/v1/page_views
   def create
@@ -17,9 +15,9 @@ class Api::V1::PageViewsController < Api::V1::ApiController
   end
 
   # GET /api/v1/page_views/chart_data
-  # Aqui você vê por DIA, MÊS ou ANO
   # Exemplo: /api/v1/page_views/chart_data?period=day
   def chart_data
+    Rails.logger.debug "Permissões do Usuário: #{current_user.permission_cache.to_a}"
     authorize PageView
 
     period = %w[day month year].include?(params[:period]) ? params[:period] : 'day'
@@ -48,7 +46,6 @@ class Api::V1::PageViewsController < Api::V1::ApiController
   end
 
   # GET /api/v1/page_views/summary
-  # Totais do período selecionado
   def summary
     authorize PageView
 
@@ -66,14 +63,12 @@ class Api::V1::PageViewsController < Api::V1::ApiController
   def top_pages
     authorize PageView
 
-    # As 10 páginas mais acessadas no período
     data = filtered_views
             .group(:page)
             .order('count_all DESC')
             .limit(10)
             .count
 
-    # Transforma em lista de objetos
     render json: data.map { |k, v| { name: k, value: v } }
   end
 
@@ -81,7 +76,6 @@ class Api::V1::PageViewsController < Api::V1::ApiController
   def top_sources
     authorize PageView
 
-    # Sem gem browser: agrupa pela string crua do User Agent
     data = filtered_views
             .group(:user_agent)
             .order('count_all DESC')
@@ -94,7 +88,6 @@ class Api::V1::PageViewsController < Api::V1::ApiController
   private
 
   def set_date_range
-    # Padrão: Últimos 30 dias se não informar nada
     start_param = params[:start_date]
     end_param   = params[:end_date]
 
