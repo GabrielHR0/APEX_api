@@ -1,4 +1,5 @@
 class Card < ApplicationRecord
+  has_paper_trail
   belongs_to :carousel_frame
   
   has_one_attached :image

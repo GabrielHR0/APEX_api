@@ -1,6 +1,6 @@
 class CreateHeroCards < ActiveRecord::Migration[8.1]
   def change
-    create_table :hero_cards do |t|
+    create_table :hero_cards, id: :uuid do |t|
       t.string :title
       t.string :description
       t.integer :position

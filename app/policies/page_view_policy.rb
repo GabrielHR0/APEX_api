@@ -1,21 +1,21 @@
 class PageViewPolicy < ApplicationPolicy
   def create?
-    true
+    true 
   end
 
-  def index?
+  def summary?
     check_permission(:read)
   end
 
-  def stats?
+  def chart_data?
     check_permission(:read)
   end
 
-  def monthly?
+  def top_pages?
     check_permission(:read)
   end
 
-  def by_page?
+  def top_sources?
     check_permission(:read)
   end
 end

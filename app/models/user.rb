@@ -1,87 +1,152 @@
 class User < ApplicationRecord
+  has_paper_trail
   include Devise::JWT::RevocationStrategies::JTIMatcher
+  attr_accessor :admin_password_confirmation
+  
+  require 'set'
 
   devise :database_authenticatable,
-         :registerable,
          :recoverable,
          :rememberable,
          :validatable,
          :jwt_authenticatable,
          jwt_revocation_strategy: self
 
-  # ASSOCIAÇÕES RBAC
   has_many :user_roles, dependent: :destroy
   has_many :roles, through: :user_roles
-  has_many :permissions, through: :roles
-  
+  has_many :permissions, -> { distinct }, through: :roles
+
   before_create :set_jti
-  after_create :assign_default_role, if: :new_record?
-  
-  # JWT payload personalizado
+  after_create :assign_default_role
+
+  after_commit :clear_permission_cache
+
+  # Payload JWT com todas as informações necessárias
   def jwt_payload
     super.merge(
-      roles: roles.pluck(:name),
-      #permissions: permission_list
+      id: id,
+      email: email,
+      roles: role_names.to_a,
+      permissions: permission_set.to_a,
+      jti: jti
     )
   end
-  
-  # MÉTODOS DE ROLE
-  def add_role(role_name)
-    role = Role.find_by(name: role_name)
-    if role && !has_role?(role_name)
-      roles << role
-      true
-    else
-      false
+
+  # Cache de permissões com objetos completos
+  def permission_objects_cache
+    Rails.cache.fetch("user_permission_objects/#{id}", expires_in: 12.hours) do
+      permissions.select(:id, :resource, :action, :description, :created_at, :updated_at).to_a
     end
   end
-  
-  def remove_role(role_name)
-    role = Role.find_by(name: role_name)
-    if role
-      roles.delete(role)
-      true
-    else
-      false
+
+  # Cache de permissões como strings para verificação rápida
+  def permission_cache
+    Rails.cache.fetch("user_permissions_strings/#{id}", expires_in: 12.hours) do
+      permissions
+        .pluck(:resource, :action)
+        .map { |r, a| "#{r}:#{a}" }
+        .to_set
+        .freeze
     end
   end
-  
-  def has_role?(role_name)
-    roles.exists?(name: role_name)
+
+  # Retorna o conjunto completo de permissões como strings
+  def permission_set
+    permission_cache
   end
-  
-  def admin?
-    has_role?(Role::ADMIN)
+
+  # Retorna objetos completos de permissões
+  def permission_objects
+    permission_objects_cache
   end
-  
-  def editor?
-    has_role?(Role::EDITOR)
+
+  def role_names
+    Rails.cache.fetch("user_roles/#{id}", expires_in: 12.hours) do
+      roles.pluck(:name).to_set.freeze
+    end
   end
-  
-  def viewer?
-    has_role?(Role::VIEWER)
+
+  # Retorna objetos completos de roles com suas permissions
+  def role_objects
+    Rails.cache.fetch("user_role_objects/#{id}", expires_in: 12.hours) do
+      roles.includes(:permissions).to_a
+    end
   end
-  
-  def can?(resource, action)    
-    Rails.logger.info "[AUTH] Verificando permissão -> resource=#{resource}, action=#{action}"
-    permissions.exists?(resource: resource.to_s, action: action.to_s)
+
+  def clear_permission_cache
+    Rails.cache.delete_multi([
+      "user_permission_objects/#{id}",
+      "user_permissions_strings/#{id}",
+      "user_roles/#{id}",
+      "user_role_objects/#{id}"
+    ])
+
+    @permission_objects_cache = nil
+    @permission_cache = nil
+    @role_names = nil
+    @role_objects = nil
   end
-  
+
+  def can?(resource, action)
+    permission_cache.include?("#{resource}:#{action}")
+  end
+
   def cannot?(resource, action)
     !can?(resource, action)
   end
-  
-  def permission_list
-    permissions.pluck(:resource, :action).map { |r, a| "#{r}:#{a}" }
+
+  def has_role?(role_name)
+    role_names.include?(role_name)
   end
-  
+
+  def admin?
+    has_role?(Role::ADMIN)
+  end
+
+  def editor?
+    has_role?(Role::EDITOR)
+  end
+
+  def viewer?
+    has_role?(Role::VIEWER)
+  end
+
+  def add_role(role_name)
+    role = Role.find_by(name: role_name)
+    return false unless role
+    return false if has_role?(role_name)
+
+    roles << role
+    clear_permission_cache
+    true
+  end
+
+  def remove_role(role_name)
+    role = Role.find_by(name: role_name)
+    return false unless role
+
+    roles.delete(role)
+    clear_permission_cache
+    true
+  end
+
+  # JTI Rotation: Gera novo JTI
+  def rotate_jti!
+    update!(jti: SecureRandom.uuid)
+    clear_permission_cache
+    jti
+  end
+
   private
-  
+
   def set_jti
     self.jti ||= SecureRandom.uuid
   end
-  
+
   def assign_default_role
-    add_role(Role::VIEWER) if roles.empty?
+    return unless roles.empty?
+
+    default_role = Role.find_by(name: Role::VIEWER)
+    roles << default_role if default_role
   end
 end

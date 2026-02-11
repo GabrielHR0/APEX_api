@@ -1,17 +1,17 @@
 Rails.application.routes.draw do
 
-  devise_for :users, 
-             path: 'api/v1',
-             path_names: {
-               sign_in: 'login',
-               sign_out: 'logout',
-               registration: 'signup'
-             },
-             controllers: {
-               sessions: 'api/v1/users/sessions',
-               registrations: 'api/v1/users/registrations'
-             },
-             defaults: { format: :json }
+  devise_for :users,
+    path: 'api/v1/auth',
+    path_names: {
+      sign_in: 'login',
+      sign_out: 'logout'
+    },
+    controllers: {
+      sessions: 'api/v1/users/sessions',
+      passwords: 'api/v1/users/passwords'
+    },
+    skip: [:registrations],
+    defaults: { format: :json }
 
   namespace :api do
     namespace :v1 do
@@ -36,7 +36,6 @@ Rails.application.routes.draw do
       
       resources :members
 
-
       resources :extension_cores do
         member do
           post :add_images
@@ -45,7 +44,9 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :landing_page
+      resources :landing_page, only: [:index] do 
+        delete :clear_cache, on: :collection
+      end
 
       resources :events do
         member do
@@ -60,13 +61,13 @@ Rails.application.routes.draw do
       end
 
       resources :page_views, only: [:create] do
-            collection do
-              get :summary      # Card de 
-              get :chart_data   # O Gráfico (Dia/Mês)
-              get :top_pages    # Lista de páginas
-              get :top_sources  # Lista de navegadores (cru)
-            end
-          end
+        collection do
+          get :summary      # Card de 
+          get :chart_data   # O Gráfico (Dia/Mês)
+          get :top_pages    # Lista de páginas
+          get :top_sources  # Lista de navegadores (cru)
+        end
+      end
 
       resources :contacts do
         collection do
@@ -109,11 +110,13 @@ Rails.application.routes.draw do
 
       resources :users do
         collection do
-          get 'me'
-          post 'refresh'
+          get :me
+          post :refresh
         end
       end
-      resources :extension_cores
+
+      resources :roles
+      resources :permissions, only: [:index]
 
       resources :projects do
         collection do
@@ -121,7 +124,6 @@ Rails.application.routes.draw do
         end
       end
       
-      resources :email_logs
     end
   end
 end

@@ -1,6 +1,6 @@
 class CreateMembers < ActiveRecord::Migration[8.1]
   def change
-    create_table :members do |t|
+    create_table :members, id: :uuid do |t|
       t.string :fullName
       t.string :role
       t.string :email

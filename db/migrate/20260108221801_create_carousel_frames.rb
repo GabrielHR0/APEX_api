@@ -1,6 +1,6 @@
 class CreateCarouselFrames < ActiveRecord::Migration[8.1]
   def change
-    create_table :carousel_frames do |t|
+    create_table :carousel_frames, id: :uuid do |t|
       t.string :title
       t.text :description
       t.integer :position

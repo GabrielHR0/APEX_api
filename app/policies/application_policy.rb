@@ -34,13 +34,9 @@ class ApplicationPolicy
     check_permission(:destroy)
   end
 
-  # AÇÕES ESPECIAIS
-
   def manage?
-    check_permission(:manage, resource: 'ordering')
+    check_permission(:manage)
   end
-
-  # FALLBACK 
 
   def method_missing(method_name, *args, &block)
     if method_name.to_s.end_with?('?')
@@ -71,8 +67,9 @@ class ApplicationPolicy
 
   def check_permission(action, resource: nil)
     return false unless user
-    resource ||= record.class.name.underscore
 
+    resource ||= (record.is_a?(Class) ? record : record.class).name.underscore
+    
     user.can?(resource, action)
   end
 end

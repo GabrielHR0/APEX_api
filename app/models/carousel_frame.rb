@@ -1,4 +1,5 @@
 class CarouselFrame < ApplicationRecord
+  has_paper_trail
   before_validation :set_default_position, on: :create
   after_save :reorder_positions
   after_destroy :reorder_after_destroy

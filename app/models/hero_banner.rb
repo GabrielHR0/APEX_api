@@ -1,4 +1,5 @@
 class HeroBanner < ApplicationRecord
+  has_paper_trail
 
   validates :title, :description, presence: true
   validate :validate_image

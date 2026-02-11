@@ -1,4 +1,5 @@
 class Member < ApplicationRecord
+  has_paper_trail
   has_many :extension_cores, dependent: :restrict_with_error
 
   validates :full_name, presence: true
@@ -7,6 +8,8 @@ class Member < ApplicationRecord
 
   has_many :extension_cores
   has_one_attached :image
+
+  scope :active, -> { where(active: true) }
 
   before_destroy :ensure_no_extension_cores!
 
