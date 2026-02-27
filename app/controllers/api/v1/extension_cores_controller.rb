@@ -1,90 +1,37 @@
 class Api::V1::ExtensionCoresController < Api::V1::ApiController
+  skip_before_action :authenticate_user!, only: [:index, :show]
   before_action :set_extension_core, only: %i[show update destroy add_images remove_image remove_icon]
 
-  # GET /extension_cores
-  def index
-    extension_cores = policy_scope(ExtensionCore)
-                        .includes(
-                          :member,
-                          :projects,
-                          images_attachments: :blob,
-                          icon_attachment: :blob
-                        )
-
-    render json: extension_cores.as_json(
-      include: {
-        member: {},
-        projects: {}
-      },
-      methods: [:image_urls, :icon_url]
-    )
+def index
+    extension_cores = policy_scope(ExtensionCore).includes(:member, :projects)
+    render json: render_flat(extension_cores)
   end
 
-  # GET /extension_cores/:id
   def show
     authorize @extension_core
-
-    render json: @extension_core.as_json(
-      include: {
-        member: {},
-        projects: {}
-      },
-      methods: [:image_urls, :icon_url]
-    )
+    render json: render_flat(@extension_core)
   end
 
-  # POST /extension_cores
   def create
-    extension_core = ExtensionCore.new(extension_core_params)
-    authorize extension_core
+    @carousel_frame = ExtensionCore.new(extension_core_params_with_images)
+    authorize @carousel_frame
 
-    extension_core.icon.attach(params[:icon]) if params[:icon].present?
-
-    if params[:images].present?
-      params[:images].each { |image| extension_core.images.attach(image) }
-    end
-
-    if extension_core.save
-      render json: extension_core.as_json(
-        include: {
-          member: {},
-          projects: {}
-        },
-        methods: [:image_urls, :icon_url]
-      ),
-      status: :created,
-      location: api_v1_extension_core_url(extension_core)
+    if @carousel_frame.save
+      render json: render_flat(@carousel_frame), status: :created
     else
-      render json: { errors: extension_core.errors.full_messages },
-            status: :unprocessable_entity
+      render json: { errors: @carousel_frame.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /extension_cores/:id
   def update
     authorize @extension_core
-
-    @extension_core.icon.attach(params[:icon]) if params[:icon].present?
-
-    if params[:images].present?
-      params[:images].each { |image| @extension_core.images.attach(image) }
-    end
-
-    if @extension_core.update(extension_core_params)
-      render json: @extension_core.as_json(
-        include: {
-          member: {},
-          projects: {}
-        },
-        methods: [:image_urls, :icon_url]
-      )
+    if @extension_core.update(extension_core_params_with_images)
+      render json: render_flat(@extension_core)
     else
-      render json: { errors: @extension_core.errors.full_messages },
-            status: :unprocessable_entity
+      render json: { errors: @extension_core.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # DELETE /extension_cores/:id
   def destroy
     authorize @extension_core
     @extension_core.destroy!
@@ -93,96 +40,101 @@ class Api::V1::ExtensionCoresController < Api::V1::ApiController
 
   def remove_icon
     authorize @extension_core
-
-    if @extension_core.icon.attached?
-      @extension_core.icon.purge
-      
-      render json: { 
-        message: 'Ícone removido com sucesso'
-      }
+    if @extension_core.icon.present?
+      @extension_core.remove_icon!
+      @extension_core.save
+      render json: { message: 'Ícone removido com sucesso' }
     else
-      render json: { error: 'Nenhum ícone encontrado' }, 
-             status: :not_found
+      render json: { error: 'Nenhum ícone encontrado' }, status: :not_found
     end
   end
 
-  # POST /extension_cores/:id/images
   def add_images
     authorize @extension_core
-
-    if params[:images].blank?
+    # Caça imagens tanto no root quanto no objeto
+    new_images = Array(params[:images] || params.dig(:extension_core, :images))
+    
+    if new_images.blank?
       return render json: { error: 'Nenhuma imagem fornecida' }, status: :bad_request
     end
 
-    # Verifica se adicionar novas imagens excederia o limite
-    current_count = @extension_core.images.count
-    new_count = params[:images].size
-    total_count = current_count + new_count
-
-    if total_count > 2
-      return render json: { 
-        errors: ["Não é possível adicionar #{new_count} imagem(ns). O núcleo já possui #{current_count} imagem(ns) e o limite é 2."] 
-      }, status: :unprocessable_entity
+    if (@extension_core.images.count + new_images.count) > 2
+      return render json: { errors: ["Limite de 2 imagens excedido."] }, status: :unprocessable_entity
     end
 
-    # Adiciona as imagens
-    attached_images = []
-    params[:images].each do |image|
-      @extension_core.images.attach(image)
-      attached_images << {
-        id: @extension_core.images.last.id,
-        filename: image.original_filename,
-        url: url_for(@extension_core.images.last)
-      }
-    end
-
+    @extension_core.images += new_images
     if @extension_core.save
-      render json: { 
-        message: 'Imagens adicionadas com sucesso',
-        images: attached_images,
-        current_count: @extension_core.images.count
-      }
+      render json: { message: 'Sucesso', images: @extension_core.image_urls }
     else
-      render json: { errors: @extension_core.errors.full_messages },
-             status: :unprocessable_entity
+      render json: { errors: @extension_core.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # DELETE /extension_cores/:id/images/:image_id
   def remove_image
     authorize @extension_core
-
-    attachment = @extension_core.images_attachments.find_by(id: params[:image_id])
+    image_identifier = params[:image_id]
+    remain_images = @extension_core.images
     
-    if attachment.nil?
+    # find the image by filename/identifier
+    image_to_remove = remain_images.find { |img| img.identifier == image_identifier || img.filename == image_identifier }
+    
+    if image_to_remove.nil?
       return render json: { error: 'Imagem não encontrada' }, status: :not_found
     end
-    
-    if attachment.purge
-      render json: { 
-        message: 'Imagem removida com sucesso',
-        current_count: @extension_core.images.count
-      }
+
+    remain_images.delete(image_to_remove)
+    @extension_core.images = remain_images
+
+    if @extension_core.save
+      render json: { message: 'Imagem removida com sucesso' }
     else
-      render json: { error: 'Não foi possível remover a imagem' }, 
-             status: :unprocessable_entity
+      render json: { error: 'Falha ao remover' }, status: :unprocessable_entity
     end
   end
 
   private
 
   def set_extension_core
-    @extension_core = ExtensionCore
-                        .includes(:member, :projects, images_attachments: :blob, icon_attachment: :blob)
-                        .find(params.require(:id))
+    @extension_core = ExtensionCore.includes(:member, :projects).find(params[:id])
   end
 
-  def extension_core_params
-    params.require(:extension_core).permit(
-      :acronym,
-      :name,
-      :description,
-      :member_id
-    )
+  def extension_core_params_with_images
+    p = params.require(:extension_core).permit(:acronym, :name, :description, :member_id, :icon, { images: [] })
+    
+    icon_file = params[:extension_core][:icon] || params[:icon]
+    p[:icon] = icon_file if icon_file.present?
+
+    images_files = params[:extension_core][:images] || params[:images]
+    p[:images] = Array(images_files) if images_files.present?
+
+    p
+  end
+
+  def render_flat(resource)
+    serializer = ExtensionCoreSerializer.new(resource).serializable_hash
+    data = serializer[:data]
+
+    if resource.respond_to?(:each)
+      data.map { |item| item[:attributes].merge(id: item[:id]) }
+    else
+      data[:attributes].merge(id: data[:id])
+    end
+  end
+
+  def flatten_item(item, included)
+    flat = item[:attributes].merge(id: item[:id])
+    
+    # Mescla os dados do member e projects se existirem no 'included'
+    if item[:relationships] && included
+      item[:relationships].each do |type, rel_data|
+        rel_ids = Array(rel_data[:data]).map { |d| d[:id] }
+        flat[type] = included.select { |inc| inc[:type] == type.to_s.singularize.to_sym && rel_ids.include?(inc[:id]) }
+                             .map { |inc| inc[:attributes].merge(id: inc[:id]) }
+        
+        # Se for belongs_to (singular), removemos do array
+        flat[type] = flat[type].first if type == :member
+      end
+    end
+    flat
   end
 end

@@ -1,37 +1,48 @@
 class ExtensionCore < ApplicationRecord
   has_paper_trail
 
-  validates :acronym, :name, presence: true
+  mount_base64_uploader :icon, ImageUploader
+  
+
+  mount_uploaders :images, ImageUploader
 
   belongs_to :member
   has_many :projects, dependent: :destroy
-  
-  has_many_attached :images
-  has_one_attached :icon
 
+  validates :acronym, :name, presence: true
+  validate :image_size_validation
   validate :image_count_within_limit
 
-  def image_count_within_limit
-    if images.count > 2
-      errors.add(:images, "não pode ter mais de 2 imagens")
-    end
-  end
+  scope :ordered, -> { order(created_at: :desc) }
 
   def image_urls
-    images.map do |image|
-      {
-        id: image.id,
-        url: Rails.application.routes.url_helpers.url_for(image),
-        filename: image.filename.to_s,
-        content_type: image.content_type,
-        byte_size: image.byte_size
-      }
-    end
+    images.map(&:url).compact
   end
 
   def icon_url
-    if icon.attached?
-      Rails.application.routes.url_helpers.url_for(icon)
+    icon.url if icon.present?
+  end
+
+  private
+
+  def image_size_validation
+    # Validação do Ícone (Igual ao Event)
+    if icon.present? && icon.size > 5.megabytes
+      errors.add(:icon, "O ícone deve ter no máximo 5MB")
+    end
+
+    # Validação das Imagens do Array
+    images.each do |img|
+      if img.size > 5.megabytes
+        errors.add(:images, "Cada imagem deve ter no máximo 5MB")
+      end
+    end
+  end
+
+  def image_count_within_limit
+    # Verifica se o array de imagens excede o limite
+    if images.count > 2
+      errors.add(:images, "não pode ter mais de 2 imagens")
     end
   end
 end

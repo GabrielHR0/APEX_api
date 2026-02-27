@@ -68,8 +68,18 @@ class ApplicationPolicy
   def check_permission(action, resource: nil)
     return false unless user
 
+    # determine the resource (model name underscored) unless explicitly provided
     resource ||= (record.is_a?(Class) ? record : record.class).name.underscore
-    
-    user.can?(resource, action)
+
+    # normal permission check for the given resource
+    has_permission = user.can?(resource, action)
+
+    # special global permission for ordering operations
+    # some controllers use `authorize Model, :manage?` when reordering records
+    # but we store a dedicated `ordering:manage` permission.  grant access
+    # if the user has that flag regardless of the specific resource.
+    ordering_permission = (action == :manage && user.can?('ordering', action))
+
+    has_permission || ordering_permission
   end
 end

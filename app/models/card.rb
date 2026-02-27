@@ -1,8 +1,9 @@
 class Card < ApplicationRecord
   has_paper_trail
   belongs_to :carousel_frame
+  mount_uploader :image, ImageUploader
   
-  has_one_attached :image
+  #has_one_attached :image
   
   validates :title, :description, presence: true
   validates :position, numericality: { 
@@ -92,12 +93,6 @@ class Card < ApplicationRecord
   end
   
   def image_url
-    return nil unless image.attached?
-
-    Rails.application.routes.url_helpers.rails_blob_url(
-      image,
-      only_path: false,
-      host: Rails.application.config.action_mailer.default_url_options[:host]
-    )
+    image.present? ? image.url : nil
   end
 end

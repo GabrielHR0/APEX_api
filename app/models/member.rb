@@ -1,51 +1,39 @@
 class Member < ApplicationRecord
   has_paper_trail
+  mount_base64_uploader :image, ImageUploader
+
   has_many :extension_cores, dependent: :restrict_with_error
 
   validates :full_name, presence: true
-  validate :validate_image
   validates :email, presence: true, uniqueness: true
 
-  has_many :extension_cores
-  has_one_attached :image
+  validate :image_size_validation
+  validate :limit_featured_members, if: :featured?
 
   scope :active, -> { where(active: true) }
+  scope :featured, -> { where(featured: true) }
 
   before_destroy :ensure_no_extension_cores!
 
   private
 
-  def validate_image
-    return unless image.attached?
-
-    allowed_types = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
-
-    unless allowed_types.include?(image.content_type)
-      errors.add(:image, 'A imagem deve ser um arquivo JPG, PNG, JPEG OU WEBP')
+  def image_size_validation
+    if image.size > 5.megabytes
+      errors.add(:image, "A imagem deve ter no máximo 5MB")
     end
-
-    max_size = 5.megabytes
-    if image.byte_size > max_size
-      errors.add(:image, 'A imagem deve ter no máximo 5MG')
-    end
-  end
-
-  def image_url
-    return nil unless image.attached?
-
-    Rails.application.routes.url_helpers.rails_blob_url(
-    image,
-    only_path: false
-    )
   end
 
   def ensure_no_extension_cores!
-    return unless extension_cores.exists?
+    if extension_cores.exists?
+      errors.add(:base, 'Não é possível remover o membro pois ele possui núcleos de extensão vinculados')
+      throw :abort
+    end
+  end
 
-    errors.add(
-      :base,
-      'Não é possível remover o membro pois ele possui núcleos de extensão vinculados'
-    )
-    throw :abort
+  def limit_featured_members
+    featured_count = Member.where(featured: true).where.not(id: id).count
+    if featured_count >= 2
+      errors.add(:featured, 'Não é possível ter mais de 2 membros destacados simultaneamente.')
+    end
   end
 end

@@ -1,38 +1,23 @@
 class HeroBanner < ApplicationRecord
   has_paper_trail
+  
+  # Padronização: Base64 uploader
+  mount_base64_uploader :image, ImageUploader
 
   validates :title, :description, presence: true
-  validate :validate_image
+  validate :image_size_validation
   validate :only_one_active, if: :active?
 
-  scope :active, -> { where(active: true)}
-  
-  has_one_attached :image
+  scope :active, -> { where(active: true) }
 
   private
 
-  def validate_image
-    return unless image.attached?
-
-    allowed_types = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
-
-    unless allowed_types.include?(image.content_type)
-      errors.add(:image, 'A imagem deve ser um arquivo JPG, PNG, JPEG OU WEBP')
+  def image_size_validation
+    return unless image.present?
+    
+    if image.size > 5.megabytes
+      errors.add(:image, "A imagem deve ter no máximo 5MB")
     end
-
-    max_size = 5.megabytes
-    if image.byte_size > max_size
-      errors.add(:image, 'A imagem deve ter no máximo 5MG')
-    end
-  end
-
-  def image_url
-    return nil unless image.attached?
-
-    Rails.application.routes.url_helpers.rails_blob_url(
-    image,
-    only_path: false
-    )
   end
 
   def only_one_active

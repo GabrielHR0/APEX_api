@@ -1,43 +1,32 @@
 class ExtensionCoreQuery
   def self.call
-    sql = <<~SQL
-      WITH projects_agg AS (
-        SELECT
-          extension_core_id,
-          jsonb_agg(
-            jsonb_build_object(
-              'id', id,
-              'name', name,
-              'description', description,
-              'details', details,
-              'featured', featured
-            )
-            ORDER BY id
-          ) AS projects
-        FROM projects
-        WHERE active = true
-        GROUP BY extension_core_id
-      )
-      SELECT COALESCE(
-        jsonb_agg(
-          jsonb_build_object(
-            'id', ec.id,
-            'acronym', ec.acronym,
-            'name', ec.name,
-            'description', ec.description,
-            'member_id', ec.member_id,
-            'projects', COALESCE(pa.projects, '[]'::jsonb)
-          )
-        ),
-        '[]'::jsonb
-      )
-      FROM extension_cores ec
-      LEFT JOIN projects_agg pa
-        ON pa.extension_core_id = ec.id
-    SQL
+    # Usamos o SQL para manter a lógica de agregação de projetos complexa se necessário,
+    # mas carregamos os objetos ExtensionCore para o CarrierWave funcionar.
+    
+    # 1. Buscamos os núcleos (objetos completos)
+    cores = ExtensionCore.includes(:member, :projects).all
 
-    JSON.parse(
-      ActiveRecord::Base.connection.select_value(sql) || '[]'
-    )
+    # 2. Como você quer projetos específicos (ativos), filtramos na montagem
+    cores.map do |core|
+      {
+        id: core.id,
+        acronym: core.acronym,
+        name: core.name,
+        description: core.description,
+        member_id: core.member_id,
+        created_at: core.created_at,
+        icon_url: core.icon.url, # CarrierWave agora funciona
+        image_urls: core.images.map(&:url).compact, # CarrierWave agora funciona
+        projects: core.projects.where(active: true).map do |p|
+          {
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            details: p.details,
+            featured: p.featured
+          }
+        end
+      }
+    end
   end
 end

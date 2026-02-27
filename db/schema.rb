@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_07_173701) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_26_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -64,6 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_173701) do
     t.uuid "carousel_frame_id", null: false
     t.datetime "created_at", null: false
     t.text "description"
+    t.string "image"
     t.integer "position"
     t.string "title"
     t.datetime "updated_at", null: false
@@ -75,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_173701) do
     t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.text "description"
+    t.string "image"
     t.integer "position"
     t.string "title"
     t.datetime "updated_at", null: false
@@ -106,6 +108,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_173701) do
   create_table "events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true
     t.datetime "created_at", null: false
+    t.string "image"
     t.integer "position"
     t.string "subtitle"
     t.string "title"
@@ -117,6 +120,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_173701) do
     t.string "acronym"
     t.datetime "created_at", null: false
     t.string "description"
+    t.string "icon"
+    t.json "images"
     t.uuid "member_id", null: false
     t.string "name"
     t.datetime "updated_at", null: false
@@ -127,6 +132,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_173701) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.text "description"
+    t.string "image"
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_hero_banners_on_active", where: "(active = true)"
@@ -145,7 +151,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_173701) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.string "email"
+    t.boolean "featured", default: false
     t.string "full_name"
+    t.string "image"
     t.string "phone"
     t.string "role"
     t.datetime "updated_at", null: false
@@ -243,6 +251,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_07_173701) do
     t.string "item_id", null: false
     t.string "item_type", null: false
     t.text "object"
+    t.jsonb "object_changes"
     t.string "whodunnit"
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
   end

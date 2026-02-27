@@ -79,3 +79,6 @@ end
 gem "kaminari", "~> 1.2"
 
 gem "image_processing", "~> 1.14"
+
+gem 'carrierwave', '~> 3.0'
+gem 'carrierwave-base64', '~> 2.10' # Importante para os seus controllers API

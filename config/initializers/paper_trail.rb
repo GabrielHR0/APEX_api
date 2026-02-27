@@ -1,1 +1,3 @@
-PaperTrail.config.version_limit = 50
+PaperTrail.configure do |config|
+  config.version_limit = 50
+end

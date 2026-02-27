@@ -99,6 +99,17 @@ GEM
     builder (3.3.0)
     byebug (13.0.0)
       reline (>= 0.6.0)
+    carrierwave (3.1.2)
+      activemodel (>= 6.0.0)
+      activesupport (>= 6.0.0)
+      addressable (~> 2.6)
+      image_processing (~> 1.1)
+      marcel (~> 1.0.0)
+      ssrf_filter (~> 1.0)
+    carrierwave-base64 (2.11.0)
+      carrierwave (>= 2.2.1)
+      marcel (~> 1.0.0)
+      mime-types (~> 3.0)
     coderay (1.1.3)
     concurrent-ruby (1.3.6)
     connection_pool (3.0.2)
@@ -208,8 +219,12 @@ GEM
       net-imap
       net-pop
       net-smtp
-    marcel (1.1.0)
+    marcel (1.0.4)
     method_source (1.1.0)
+    mime-types (3.7.0)
+      logger
+      mime-types-data (~> 3.2025, >= 3.2025.0507)
+    mime-types-data (3.2026.0203)
     mini_magick (5.3.1)
       logger
     mini_mime (1.1.5)
@@ -399,6 +414,7 @@ GEM
       net-sftp (>= 2.1.2)
       net-ssh (>= 2.8.0)
       ostruct
+    ssrf_filter (1.3.0)
     stringio (3.2.0)
     thor (1.5.0)
     thruster (0.1.16)
@@ -445,6 +461,8 @@ DEPENDENCIES
   brakeman
   brevo
   byebug
+  carrierwave (~> 3.0)
+  carrierwave-base64 (~> 2.10)
   debug
   devise (~> 4.9)
   devise-jwt

@@ -34,7 +34,11 @@ Rails.application.routes.draw do
         end
       end
       
-      resources :members
+      resources :members  do
+        collection do
+          get :count
+        end
+      end
 
       resources :extension_cores do
         member do
@@ -101,7 +105,18 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :social_media_profiles
+      resources :social_media_profiles do
+        member do
+          patch :move_up
+          patch :move_down
+          patch :move_to_position
+        end
+
+        collection do
+          post :reorder
+        end
+      end
+
       resources :companies do
         resource :address,
           controller: 'company_address',
@@ -121,6 +136,16 @@ Rails.application.routes.draw do
       resources :projects do
         collection do
           get :count
+        end
+      end
+
+      # Auditoria - rastreamento de alterações
+      resources :audits, only: [] do
+        collection do
+          get :index
+        end
+        member do
+          get :show
         end
       end
       

@@ -4,7 +4,8 @@ class CarouselFrame < ApplicationRecord
   after_save :reorder_positions
   after_destroy :reorder_after_destroy
   
-  has_one_attached :image
+  mount_base64_uploader :image, ImageUploader
+  #has_one_attached :image
   has_many :cards, dependent: :destroy
 
   validates :title, :description, presence: true
@@ -86,27 +87,13 @@ class CarouselFrame < ApplicationRecord
                  .update_all("position = position - 1")
   end
   
-  def validate_image  
-    return unless image.attached?
-
-    allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-    
-    unless allowed_types.include?(image.content_type)
-      errors.add(:image, 'A imagem deve ser um arquivo JPG, PNG, JPEG OU WEBP')
-    end
-
-    max_size = 5.megabytes
-    if image.byte_size > max_size
-      errors.add(:image, 'A imagem deve ter no máximo 5MB')
+  def validate_image
+    if image.present? && image.file.size > 5.megabytes
+      errors.add(:image, 'deve ter no máximo 5MB')
     end
   end
   
   def image_url
-    return nil unless image.attached?
-
-    Rails.application.routes.url_helpers.rails_blob_url(
-    image,
-    only_path: false
-    )
+    image.present? ? image.url : nil
   end
 end

@@ -9,4 +9,10 @@ class ApplicationController < ActionController::API
       message: "Você não tem permissão para realizar esta ação."
     }, status: :forbidden
   end
+
+  protected
+
+  def user_for_paper_trail
+    current_user&.id&.to_s || "sistema"
+  end
 end

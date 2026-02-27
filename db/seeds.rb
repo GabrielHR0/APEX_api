@@ -60,6 +60,13 @@ ActiveRecord::Base.transaction do
     p.description = 'Permite limpar o cache do sistema'
   end
 
+  Permission.find_or_create_by!(
+    resource: 'audit',
+    action: 'read'
+  ) do |p|
+    p.description = 'Permite visualizar logs de auditoria e histórico de alterações'
+  end
+
   puts "🔗 Associando permissões às roles..."
 
   viewer_role.permissions = Permission.where(action: 'read')
@@ -94,7 +101,7 @@ ActiveRecord::Base.transaction do
   editor_user.roles << editor_role unless editor_user.roles.include?(editor_role)
   viewer_user.roles << viewer_role unless viewer_user.roles.include?(viewer_role)
 
-  puts "\n✅ Seeds finalizados!\n"
+  puts "\nSeeds finalizados!\n"
   puts "Admin:  apex@example.com / 9qacht"
   puts "Editor: editor@example.com / editor123"
   puts "Viewer: viewer@example.com / viewer123\n"

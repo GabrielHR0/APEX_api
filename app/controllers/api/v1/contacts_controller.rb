@@ -144,8 +144,6 @@ class Api::V1::ContactsController < Api::V1::ApiController
       params.expect(contact: [ :name, :email, :message, :status, :ip_address, :sent_at ])
     end
 
-    # --- Helpers de Estatística ---
-
     def set_date_range
       # Pega data da URL ou assume últimos 30 dias
       start_param = params[:start_date]

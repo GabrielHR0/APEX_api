@@ -3,6 +3,8 @@ class Api::V1::ApiController < ApplicationController
 
   before_action :authenticate_user!
   before_action :preload_current_user
+  
+  before_action :set_paper_trail_whodunnit 
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 

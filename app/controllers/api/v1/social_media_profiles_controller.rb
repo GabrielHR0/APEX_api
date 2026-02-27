@@ -62,10 +62,11 @@ class Api::V1::SocialMediaProfilesController < Api::V1::ApiController
   end
 
   def move_up
-    authorize @profile, :manage?
+    authorize SocialMediaProfile, :manage?
     new_position = @profile.position - 1
     @profile.move_to_position(new_position)
-    
+
+    Rails.cache.delete("company:#{@profile.company_id}:social_media_profiles")
     # Para API, retorne JSON em vez de redirect
     render json: { 
       message: "Movido para cima", 
@@ -74,10 +75,11 @@ class Api::V1::SocialMediaProfilesController < Api::V1::ApiController
   end
   
   def move_down
-    authorize @profile, :manage?
+    authorize SocialMediaProfile, :manage?
     new_position = @profile.position + 1
     @profile.move_to_position(new_position)
-    
+
+    Rails.cache.delete("company:#{@profile.company_id}:social_media_profiles")
     render json: { 
       message: "Movido para baixo", 
       position: @profile.reload.position 
@@ -85,10 +87,11 @@ class Api::V1::SocialMediaProfilesController < Api::V1::ApiController
   end
   
   def move_to_position
-    authorize @profile, :manage?
+    authorize SocialMediaProfile, :manage?
     new_position = params[:position].to_i
     @profile.move_to_position(new_position)
-    
+
+    Rails.cache.delete("company:#{@profile.company_id}:social_media_profiles")
     render json: { 
       message: "Movido para posição #{new_position}", 
       position: @profile.reload.position 
@@ -96,11 +99,24 @@ class Api::V1::SocialMediaProfilesController < Api::V1::ApiController
   end
   
   def reorder
-    authorize @profile, :manage?
-    params[:order].each_with_index do |id, index|
-      SocialMediaProfile.where(id: id).update_all(position: index + 1)
+    authorize SocialMediaProfile, :manage?
+
+    unless params[:order].is_a?(Array)
+      return render json: { error: 'order array is required' }, status: :bad_request
     end
-    
+
+    # normalize incoming order array and update in a transaction
+    params[:order].each_with_index do |id, index|
+      scope = SocialMediaProfile.where(id: id)
+      scope = scope.where(company_id: params[:company_id]) if params[:company_id].present?
+      scope.update_all(position: index + 1)
+    end
+
+    # clear cache for the company specified (if passed)
+    if params[:company_id].present?
+      Rails.cache.delete("company:#{params[:company_id]}:social_media_profiles")
+    end
+
     head :ok
   end
 

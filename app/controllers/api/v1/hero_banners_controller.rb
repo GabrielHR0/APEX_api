@@ -1,78 +1,75 @@
 class Api::V1::HeroBannersController < Api::V1::ApiController
+  skip_before_action :authenticate_user!, only: [:index, :show, :active]
   before_action :set_hero_banner, only: %i[show update destroy]
 
-  # GET /hero_banners
   def index
-    hero_banners = policy_scope(HeroBanner)
-
-    render json: hero_banners.as_json(methods: [:image_url])
+    @hero_banners = policy_scope(HeroBanner).order(created_at: :desc)
+    render json: render_flat(@hero_banners)
   end
 
-  # GET /hero_banners/:id
   def show
     authorize @hero_banner
-
-    render json: @hero_banner.as_json(methods: [:image_url])
+    render json: render_flat(@hero_banner)
   end
 
-  # GET /hero_banners/active
   def active
-    authorize HeroBanner, :active?
-
-    hero = policy_scope(HeroBanner).active.first
+    # Sem necessidade de autorização complexa para rota pública
+    hero = HeroBanner.active.first
     return head :no_content unless hero
 
-    render json: hero.as_json(methods: [:image_url])
+    render json: render_flat(hero)
   end
 
-  # POST /hero_banners
   def create
-    hero = HeroBanner.new(hero_banner_params)
-    authorize hero
+    attributes = hero_banner_params
+    
+    # Padronização Event: Extrai imagem se enviada na raiz
+    image_file = params[:hero_banner][:image] || params[:image]
+    attributes[:image] = image_file if image_file.present?
 
-    if hero.save
+    @hero_banner = HeroBanner.new(attributes)
+    authorize @hero_banner
+
+    if @hero_banner.save
       ensure_one_active!
-      render json: hero.as_json(methods: [:image_url]),
-             status: :created,
-             location: api_v1_hero_banner_url(hero)
+      render json: render_flat(@hero_banner), status: :created
     else
-      render json: { errors: hero.errors.full_messages },
-             status: :unprocessable_entity
+      render json: { errors: @hero_banner.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /hero_banners/:id
   def update
     authorize @hero_banner
 
     if trying_to_disable_last_active?
-      return render json: {
-        errors: ['Não é possível desativar o único Hero Banner existente']
+      return render json: { 
+        errors: ['Não é possível desativar o único Hero Banner existente'] 
       }, status: :unprocessable_entity
     end
 
-    if @hero_banner.update(hero_banner_params)
+    attributes = hero_banner_params
+    image_file = params[:hero_banner][:image] || params[:image]
+    attributes[:image] = image_file if image_file.present?
+
+    if @hero_banner.update(attributes)
       ensure_one_active!
-      render json: @hero_banner.as_json(methods: [:image_url])
+      render json: render_flat(@hero_banner)
     else
-      render json: { errors: @hero_banner.errors.full_messages },
-             status: :unprocessable_entity
+      render json: { errors: @hero_banner.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # DELETE /hero_banners/:id
   def destroy
     authorize @hero_banner
 
     if HeroBanner.count == 1
-      return render json: {
-        errors: ['Não é possível excluir o último Hero Banner']
+      return render json: { 
+        errors: ['Não é possível excluir o último Hero Banner'] 
       }, status: :unprocessable_entity
     end
 
     was_active = @hero_banner.active
     @hero_banner.destroy!
-
     activate_fallback_hero if was_active
 
     head :no_content
@@ -81,25 +78,30 @@ class Api::V1::HeroBannersController < Api::V1::ApiController
   private
 
   def set_hero_banner
-    @hero_banner = HeroBanner.find(params.expect(:id))
+    @hero_banner = HeroBanner.find(params[:id])
   end
 
   def hero_banner_params
-    params.expect(
-      hero_banner: [
-        :title,
-        :description,
-        :active,
-        :image
-      ]
-    )
+    params.require(:hero_banner).permit(:title, :description, :active)
   end
+
+  def render_flat(resource)
+    serializer = HeroBannerSerializer.new(resource).serializable_hash
+    data = serializer[:data]
+
+    if resource.respond_to?(:each)
+      data.map { |item| item[:attributes].merge(id: item[:id]) }
+    else
+      data[:attributes].merge(id: data[:id])
+    end
+  end
+
+  # --- Lógica de Negócio Mantida ---
 
   def ensure_one_active!
     active_heroes = HeroBanner.active
-
     if active_heroes.none?
-      HeroBanner.where.not(id: @hero_banner.id).first&.update!(active: true)
+      HeroBanner.first&.update!(active: true)
     elsif active_heroes.count > 1
       last_active = active_heroes.order(updated_at: :desc).first
       active_heroes.where.not(id: last_active.id).update_all(active: false)
@@ -107,14 +109,11 @@ class Api::V1::HeroBannersController < Api::V1::ApiController
   end
 
   def trying_to_disable_last_active?
-    @hero_banner.active &&
-      hero_banner_params.key?(:active) &&
-      ActiveModel::Type::Boolean.new.cast(hero_banner_params[:active]) == false &&
-      HeroBanner.count == 1
+    is_disabling = params.dig(:hero_banner, :active).to_s == "false"
+    @hero_banner.active && is_disabling && HeroBanner.count == 1
   end
 
   def activate_fallback_hero
-    fallback = HeroBanner.first
-    fallback&.update!(active: true)
+    HeroBanner.first&.update!(active: true)
   end
 end
