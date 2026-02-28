@@ -42,7 +42,7 @@ class LandingPageBuilder
   end
 
   def self.hero_cards
-    HeroCard.where(active: true).order(:position).map { |hc| hc.as_json.merge(image_url: hc.image.url) }
+    HeroCard.where(active: true).order(:position).map { |hc| hc.as_json }
   end
 
   def self.carousel_frames

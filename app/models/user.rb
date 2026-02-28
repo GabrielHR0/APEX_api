@@ -22,6 +22,7 @@ class User < ApplicationRecord
   after_commit :clear_permission_cache
 
   # Payload JWT com todas as informações necessárias
+  # Isso não é usado no front por motivos de não vou mexer no que já funciona
   def jwt_payload
     super.merge(
       id: id,
@@ -73,12 +74,19 @@ class User < ApplicationRecord
     end
   end
 
+  def role_ids
+    Rails.cache.fetch("user_role_ids/#{id}", expires_in: 12.hours) do
+      roles.pluck(:id)
+    end
+  end
+
   def clear_permission_cache
     Rails.cache.delete_multi([
       "user_permission_objects/#{id}",
       "user_permissions_strings/#{id}",
       "user_roles/#{id}",
-      "user_role_objects/#{id}"
+      "user_role_objects/#{id}",
+      "user_role_ids/#{id}"
     ])
 
     @permission_objects_cache = nil

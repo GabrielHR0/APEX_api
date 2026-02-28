@@ -34,7 +34,7 @@ class Api::V1::UsersController < Api::V1::ApiController
   def show
     authorize @user
 
-    render json: UserSerializer.new(@user).serializable_hash
+    render json: UserSerializer.new(@user).serializable_hash[:data][:attributes]
   end
 
   def create
@@ -94,7 +94,7 @@ class Api::V1::UsersController < Api::V1::ApiController
 
   def refresh
     ActiveRecord::Base.transaction do
-      current_user.rotate_jti! # você já tem esse método 🙂
+      current_user.rotate_jti!
     end
 
     new_token, payload = Warden::JWTAuth::UserEncoder.new.call(
