@@ -4,13 +4,56 @@ class Api::V1::MembersController < Api::V1::ApiController
 
   # GET /members
   def index
-    members = Member.all
-    members = members.active if params[:filter] == 'active'
-    members = members.featured if params[:filter] == 'featured'
+    members = policy_scope(Member.all)
+    
+    # Filtros
+    members = members.where(active: true) if params[:filter] == 'active'
+    members = members.where(featured: true) if params[:filter] == 'featured'
+    
+    # Busca por nome, cargo ou email
+    if params[:search].present?
+      search = "%#{params[:search]}%"
+      members = members.where(
+        "full_name ILIKE :search OR role ILIKE :search OR email ILIKE :search",
+        search: search
+      )
+    end
+    
+    members = members.order(full_name: :asc)
+    
+    # Paginação
+    page = (params[:page] || 1).to_i
+    per_page = (params[:per_page] || 10).to_i
+    total_count = members.count
+    total_pages = (total_count.to_f / per_page).ceil
+    
+    members = members.offset((page - 1) * per_page).limit(per_page)
+    
+    render json: {
+      data: render_flat(members),
+      meta: {
+        current_page: page,
+        total_pages: total_pages,
+        total_count: total_count,
+        per_page: per_page
+      }
+    }
+  end
 
-    members = policy_scope(members).order(full_name: :asc)
-
-    render json: render_flat(members)
+  def toggle_featured
+    member = Member.find(params[:id])
+    authorize member, :update?
+    
+    new_featured = params.dig(:member, :featured)
+    
+    # Limitar a 2 membros destacados
+    if new_featured && Member.where(featured: true).where.not(id: member.id).count >= 2
+      render json: { error: "Máximo de 2 membros destacados permitidos" }, status: :unprocessable_entity
+      return
+    end
+    
+    member.update!(featured: new_featured)
+    render json: render_flat(member)
   end
 
   # GET /members/:id

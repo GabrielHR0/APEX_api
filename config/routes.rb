@@ -37,6 +37,7 @@ Rails.application.routes.draw do
       resources :members  do
         collection do
           get :count
+          patch :toggle_featured
         end
       end
 
