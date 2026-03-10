@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
 
+  root to: proc { [200, { 'Content-Type' => 'application/json' }, ['{"status":"online","message":"Servidor APEX rodando"}']] }
+
   devise_for :users,
     path: 'api/v1/auth',
     path_names: {
@@ -152,4 +154,6 @@ Rails.application.routes.draw do
       
     end
   end
+
+  match '*unmatched', to: proc { [404, { 'Content-Type' => 'application/json' }, ['{"error":"Rota não encontrada"}']] }, via: :all
 end

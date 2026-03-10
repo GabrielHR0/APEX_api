@@ -4,7 +4,7 @@ Rails.application.configure do
   # 1. Carregamento e Cache
   config.eager_load = true
   config.cache_classes = true # Importante manter true em produção
-  config.consider_all_requests_local = true # Mudei para TRUE para você ver o erro no JSON se algo quebrar
+  config.consider_all_requests_local = false
 
   # 2. Assets (Desnecessário para API, mas mantendo a lógica)
   config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present?

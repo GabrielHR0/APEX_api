@@ -23,7 +23,7 @@ class LandingPageBuilder
       member = members_map[core[:member_id]]
       
       core.merge(
-        member: member ? { id: member.id, full_name: member.full_name } : nil
+        member: member ? { id: member.id, full_name: member.full_name, image_url: member.image.url } : nil
       ).except(:member_id) # Removemos o ID solto para limpar o JSON
     end
   end

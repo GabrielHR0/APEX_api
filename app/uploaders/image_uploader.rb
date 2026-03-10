@@ -6,7 +6,7 @@ class ImageUploader < CarrierWave::Uploader::Base
   end
 
   def extension_allowlist #
-    %w[jpg jpeg png webp]
+    %w[jpg jpeg png webp gif bmp svg tiff tif ico avif heic heif]
   end
 
   def filename #

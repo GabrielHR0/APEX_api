@@ -10,7 +10,9 @@ class Project < ApplicationRecord
     private
 
     def limit_featured_projects
-        if Project.featured.where.not(id: id).count >= 1
+        scope = Project.featured
+        scope = scope.where.not(id: id) if persisted?
+        if scope.count >= 1
             errors.add(:featured, 'limite de projetos em destaque atingido')
         end
     end
