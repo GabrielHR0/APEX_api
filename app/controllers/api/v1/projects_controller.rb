@@ -23,6 +23,8 @@ class Api::V1::ProjectsController < Api::V1::ApiController
     @project = Project.new(project_params)
     authorize @project
 
+    Rails.logger.info "[ProjectsController#create] extension_core_id=#{@project.extension_core_id} featured=#{@project.featured} featured_count=#{Project.where(featured: true, active: true, extension_core_id: @project.extension_core_id).count}"
+
     if @project.save
       render json: @project, status: :created, location: api_v1_project_url(@project)
     else
