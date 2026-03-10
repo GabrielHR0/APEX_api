@@ -39,8 +39,11 @@ Rails.application.routes.draw do
       resources :members  do
         collection do
           get :count
-          patch :toggle_featured
         end
+
+	member do
+	 patch :toggle_featured
+	end
       end
 
       resources :extension_cores do
@@ -154,6 +157,5 @@ Rails.application.routes.draw do
       
     end
   end
-
   match '*unmatched', to: proc { [404, { 'Content-Type' => 'application/json' }, ['{"error":"Rota não encontrada"}']] }, via: :all
 end
