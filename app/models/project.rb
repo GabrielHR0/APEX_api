@@ -4,15 +4,15 @@ class Project < ApplicationRecord
     belongs_to :extension_core
     scope :featured, -> { where(featured: true) }
 
-    validates :active, presence: true
-    validate :limit_featured_projects, if: :featured?
+    validates :active, inclusion: { in: [true, false] }
+    validate :limit_featured_projects, if: -> { featured? && featured_changed? }
 
     private
 
     def limit_featured_projects
-        scope = Project.featured
+        scope = Project.where(featured: true)
         scope = scope.where.not(id: id) if persisted?
-        if scope.count >= 1
+        if scope.exists?
             errors.add(:featured, 'limite de projetos em destaque atingido')
         end
     end
