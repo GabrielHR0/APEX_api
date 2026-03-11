@@ -13,9 +13,8 @@ class Api::V1::CompanyAddressController < Api::V1::ApiController
   def create
     return update if @company.address.present?
     authorize @company
-    address = Address.new(address_params)
-    address.enderecavel = @company
-    if address.save
+    address = @company.create_address(address_params)
+    if address.persisted?
       render json: address, status: :created
     else
       render json: {errors: address.errors.full_messages}, status: :unprocessable_entity
