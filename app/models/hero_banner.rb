@@ -6,7 +6,7 @@ class HeroBanner < ApplicationRecord
 
   validates :title, :description, presence: true
   validate :image_size_validation
-  validate :only_one_active, if: :active?
+    # Removido: validação que impede desativar o último ativo
 
   scope :active, -> { where(active: true) }
 
@@ -20,9 +20,5 @@ class HeroBanner < ApplicationRecord
     end
   end
 
-  def only_one_active
-    if HeroBanner.where(active: true).where.not(id: id).exists?
-      errors.add(:active, 'já existe um Hero Banner ativo')
-    end
-  end
+    # Removido: método que impede desativar o último ativo
 end
