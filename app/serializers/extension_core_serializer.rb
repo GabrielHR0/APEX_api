@@ -13,7 +13,7 @@ class ExtensionCoreSerializer
   end
 
   attribute :projects do |object|
-    object.projects.map { |p| { id: p.id, name: p.name, featured: p.featured } }
+    object.projects.map { |p| { id: p.id, name: p.name, featured: p.featured, active: p.active } }
   end
 
   attribute :member do |object|
