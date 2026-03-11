@@ -14,6 +14,9 @@ class Api::V1::CompanyAddressController < Api::V1::ApiController
     return update if @company.address.present?
     authorize @company
     address = @company.build_address(address_params)
+    # Garante associação correta
+    address.enderecavel_id = @company.id
+    address.enderecavel_type = "Company"
     if address.save
       render json: address, status: :created
     else
