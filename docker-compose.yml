@@ -1,17 +1,22 @@
-version: "3.8"
-
 services:
-  db:
-    image: postgres:16
+  web:
+    build: .
+    container_name: apex_app_prod
     restart: always
-    volumes:
-      - db_data:/var/lib/postgresql/data
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      # USANDO O SEU IP REAL DA VM PARA O BANCO
+      DATABASE_URL: "postgresql://vmuser114:150623@192.168.1.176:5432/apex_production"
+      RAILS_ENV: production
+      RAILS_LOG_TO_STDOUT: "true"
+      FORCE_SSL: "false"
     ports:
-      - "5434:5432"
-
-volumes:
-  db_data:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - ./storage:/app/storage
+      - ./public/uploads:/app/public/uploads
+    # Essa linha ajuda o container a enxergar o IP do host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
