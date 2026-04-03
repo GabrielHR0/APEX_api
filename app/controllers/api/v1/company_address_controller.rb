@@ -24,7 +24,6 @@ class Api::V1::CompanyAddressController < Api::V1::ApiController
   def update
     address = @company.address || @company.build_address
     authorize @company
-    Rails.logger.debug "PARAMS: #{params.to_unsafe_h}"
 
     if address.update(address_params)
       render json: address, status: :ok

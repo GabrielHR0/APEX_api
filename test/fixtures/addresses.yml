@@ -1,0 +1,12 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+company_one:
+  street: Rua das Flores
+  number: "100"
+  complement: Sala 1
+  neighborhood: Centro
+  city: Sao Paulo
+  state: SP
+  zip_code: 01000-000
+  country: BR
+  company: one

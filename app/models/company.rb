@@ -16,7 +16,7 @@ class Company < ApplicationRecord
     end
 
     has_one_attached :logo
-    has_one :address, as: :enderecavel, dependent: :destroy
+    has_one :address, dependent: :destroy
     has_many :social_media_profiles, dependent: :destroy
 
     accepts_nested_attributes_for :address, update_only: true

@@ -25,15 +25,14 @@ class LandingPageQuery
 
       address_data AS (
         SELECT
-          enderecavel_id,
+          company_id,
           to_jsonb(row) AS address
         FROM (
           SELECT
-            enderecavel_id,
+            company_id,
             city, country, neighborhood, number,
             state, street, zip_code
           FROM addresses
-          WHERE enderecavel_type = 'Company'
         ) row
       ),
 
@@ -161,7 +160,7 @@ class LandingPageQuery
       )
       FROM company_data c
       LEFT JOIN social_media sm ON sm.company_id = c.id
-      LEFT JOIN address_data ad ON ad.enderecavel_id = c.id
+      LEFT JOIN address_data ad ON ad.company_id = c.id
       CROSS JOIN hero_banners hb
       CROSS JOIN hero_cards hc
       CROSS JOIN carousel_frames cf
