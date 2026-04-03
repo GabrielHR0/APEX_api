@@ -1,6 +1,6 @@
 class RefactorAddressesToCompanyReference < ActiveRecord::Migration[8.1]
   def up
-    add_reference :addresses, :company, type: :uuid, foreign_key: true, null: true
+    add_reference :addresses, :company, type: :uuid, foreign_key: true, null: true, index: false
 
     first_company_id = select_value("SELECT id FROM companies ORDER BY created_at ASC LIMIT 1")
     if first_company_id.present?
@@ -16,6 +16,7 @@ class RefactorAddressesToCompanyReference < ActiveRecord::Migration[8.1]
     remove_column :addresses, :enderecavel_id, :bigint
 
     change_column_null :addresses, :company_id, false
+    remove_index :addresses, :company_id, if_exists: true
     add_index :addresses, :company_id, unique: true
   end
 
