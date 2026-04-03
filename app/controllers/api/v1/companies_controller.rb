@@ -42,7 +42,7 @@ class Api::V1::CompaniesController < Api::V1::ApiController
   private 
     
   def set_company
-    @company = Company.first_or_create!
+    @company = Company.find(params.fetch(:id))
   end
 
   def company_params

@@ -11,6 +11,24 @@ class RefactorAddressesToCompanyReference < ActiveRecord::Migration[8.1]
       SQL
     end
 
+    execute <<~SQL
+      DELETE FROM addresses
+      WHERE id IN (
+        SELECT id
+        FROM (
+          SELECT
+            id,
+            ROW_NUMBER() OVER (
+              PARTITION BY company_id
+              ORDER BY created_at DESC NULLS LAST, updated_at DESC NULLS LAST
+            ) AS row_num
+          FROM addresses
+          WHERE company_id IS NOT NULL
+        ) duplicated
+        WHERE duplicated.row_num > 1
+      )
+    SQL
+
     remove_index :addresses, name: "index_addresses_on_enderecavel", if_exists: true
     remove_column :addresses, :enderecavel_type, :string
     remove_column :addresses, :enderecavel_id, :bigint
