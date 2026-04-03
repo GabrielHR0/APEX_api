@@ -1,22 +1,17 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16
     container_name: apex_db_prod
     restart: always
     environment:
-      # Use as mesmas credenciais que o seu Rails já utiliza hoje
       POSTGRES_USER: vmuser114
       POSTGRES_PASSWORD: "150623"
       POSTGRES_DB: apex_production
     volumes:
-      # PERSISTÊNCIA: Mapeia a pasta interna do Postgres para um volume do Docker
       - pgdata:/var/lib/postgresql/data
-      # IMPORTAÇÃO: O arquivo .sql aqui dentro é executado no primeiro boot
       - ./init-db:/docker-entrypoint-initdb.d
     ports:
-      - "5432:5432"
+      - "5432:5432" # Removido o 127.0.0.1
 
 volumes:
   pgdata:
