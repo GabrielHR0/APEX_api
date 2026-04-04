@@ -41,12 +41,6 @@ class Api::V1::HeroBannersController < Api::V1::ApiController
   def update
     authorize @hero_banner
 
-    if trying_to_disable_last_active?
-      return render json: { 
-        errors: ['Não é possível desativar o único Hero Banner existente'] 
-      }, status: :unprocessable_entity
-    end
-
     attributes = hero_banner_params
     image_file = params[:hero_banner][:image] || params[:image]
     attributes[:image] = image_file if image_file.present?
@@ -61,16 +55,7 @@ class Api::V1::HeroBannersController < Api::V1::ApiController
 
   def destroy
     authorize @hero_banner
-
-    if HeroBanner.count == 1
-      return render json: { 
-        errors: ['Não é possível excluir o último Hero Banner'] 
-      }, status: :unprocessable_entity
-    end
-
-    was_active = @hero_banner.active
     @hero_banner.destroy!
-    activate_fallback_hero if was_active
 
     head :no_content
   end
@@ -100,20 +85,9 @@ class Api::V1::HeroBannersController < Api::V1::ApiController
 
   def ensure_one_active!
     active_heroes = HeroBanner.active
-    if active_heroes.none?
-      HeroBanner.first&.update!(active: true)
-    elsif active_heroes.count > 1
+    if active_heroes.count > 1
       last_active = active_heroes.order(updated_at: :desc).first
       active_heroes.where.not(id: last_active.id).update_all(active: false)
     end
-  end
-
-  def trying_to_disable_last_active?
-    is_disabling = params.dig(:hero_banner, :active).to_s == "false"
-    @hero_banner.active && is_disabling && HeroBanner.count == 1
-  end
-
-  def activate_fallback_hero
-    HeroBanner.first&.update!(active: true)
   end
 end
