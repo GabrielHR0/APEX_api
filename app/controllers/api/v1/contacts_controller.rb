@@ -177,11 +177,11 @@ class Api::V1::ContactsController < Api::V1::ApiController
   private
     
     def set_contact
-      @contact = Contact.find(params.expect(:id))
+      @contact = Contact.find(params[:id])
     end
 
     def contact_params
-      params.expect(contact: [ :name, :email, :message, :status, :ip_address, :sent_at ])
+      params.require(:contact).permit(:name, :email, :message, :status, :ip_address, :sent_at)
     end
 
     def set_date_range

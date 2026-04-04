@@ -25,7 +25,7 @@ module Brevo
         contact.update_columns(
           sent_at: Time.current,
           status: 'recebido',
-          message_id: message_id
+          message_id: response.message_id
         )
       end
 

@@ -13,10 +13,14 @@ class Api::V1::AuditsController < Api::V1::ApiController
     @versions = @versions.where(whodunnit: params[:user_id]) if params[:user_id].present?
 
     if params[:date_from].present?
-      @versions = @versions.where('created_at >= ?', Time.zone.parse(params[:date_from]).beginning_of_day)
+      parsed = safe_parse_date(params[:date_from])
+      return render json: { error: 'Invalid date_from' }, status: :bad_request unless parsed
+      @versions = @versions.where('created_at >= ?', parsed.beginning_of_day)
     end
     if params[:date_to].present?
-      @versions = @versions.where('created_at <= ?', Time.zone.parse(params[:date_to]).end_of_day)
+      parsed = safe_parse_date(params[:date_to])
+      return render json: { error: 'Invalid date_to' }, status: :bad_request unless parsed
+      @versions = @versions.where('created_at <= ?', parsed.end_of_day)
     end
 
     page = (params[:page] || 1).to_i
@@ -62,15 +66,23 @@ class Api::V1::AuditsController < Api::V1::ApiController
   end
 
   def set_resource
+    model_class = params[:model].to_s.safe_constantize
+    unless model_class && model_class < ApplicationRecord
+      return render json: { error: "Model '#{params[:model]}' not found or not accessible" }, status: :bad_request
+    end
+
     begin
-      model_class = params[:model].constantize
       @resource = model_class.find(params[:id])
       authorize @resource
-    rescue NameError
-      render json: { error: "Model '#{params[:model]}' not found" }, status: :bad_request
     rescue ActiveRecord::RecordNotFound
       render json: { error: "#{params[:model]} with id #{params[:id]} not found" }, status: :not_found
     end
+  end
+
+  def safe_parse_date(value)
+    Time.zone.parse(value)
+  rescue ArgumentError, TypeError
+    nil
   end
 
   def serialize_version(version, users_map)
